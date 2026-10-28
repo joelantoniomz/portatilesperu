@@ -28,7 +28,8 @@ Sistema web integral de comercio y gestión para venta de equipos portátiles y 
 - **Generación de PDFs:** Motor DomPDF con 8 plantillas Blade completamente diferenciadas en diseño y diagramación.
 - **Integración WhatsApp:**
   - *Modo Enlace (Siempre disponible):* Generación obligatoria de pedido en base de datos con referencia única (`PED-YYYY-XXXX`) y validación de precios antes de abrir WhatsApp.
-  - *Modo Bandeja Integrada (Opcional):* WhatsApp Cloud API (Meta) con verificación de webhooks por firma criptográfica HMAC SHA-256 y deduplicación de eventos.
+  - *Modo Bandeja Comercial (Implementado):* perfiles de cliente, conversaciones vinculadas a pedidos, asignación a asesores y notas internas. Sin credenciales, conserva el modo enlace y no intenta leer mensajes de WhatsApp.
+  - *Cloud API (Pendiente de habilitación):* requiere credenciales autorizadas, endpoint de webhook, validación de firma y pruebas reales antes de activar envío/recepción.
 
 ---
 
@@ -98,9 +99,30 @@ orders ──────────────┬─ customers
 5. **Generador PDF Multidiseño:** Dispone de 8 maquetaciones visualmente independientes (Minimalista, Corporativo, Premium, Comercial, Técnico, Editorial, Mayorista y Moderno) con el mismo origen de datos.
 6. **Métricas Reales:** El dashboard no expone datos estáticos o ficticios en producción; calcula estadísticas vivas desde las entidades del sistema y muestra estados vacíos limpios cuando no hay registros.
 
+## 6. WhatsApp Business Platform Cloud API (Integración Oficial Meta)
+
+El sistema cuenta con un **Centro de Atención Comercial Integrado (Chat 3 Columnas)** con sincronización en tiempo real sin salir del panel administrativo ni abrir pestañas externas.
+
+### Configuración en Meta Developers:
+1. En el panel de **Meta Developers > WhatsApp > Configuration**:
+   - **Callback URL:** `https://tudominio.com/webhook/whatsapp` (o URL pública ngrok/tunnel en local).
+   - **Verify Token:** El mismo valor definido en `WHATSAPP_WEBHOOK_VERIFY_TOKEN` en tu archivo `.env`.
+   - **Webhook fields suscritos:** `messages`.
+2. Variables de entorno requeridas en `.env`:
+   ```env
+   WHATSAPP_CLOUD_API_ENABLED=true
+   WHATSAPP_CLOUD_API_VERSION=v22.0
+   WHATSAPP_PHONE_NUMBER_ID=123456789012345
+   WHATSAPP_BUSINESS_ACCOUNT_ID=123456789012345
+   WHATSAPP_ACCESS_TOKEN=EAAG...
+   WHATSAPP_WEBHOOK_VERIFY_TOKEN=tu_token_secreto_elegido
+   WHATSAPP_APP_SECRET=tu_app_secret_de_meta
+   ```
+3. Si estas credenciales no están presentes, el chat funciona en **Modo de Configuración**: permite registrar notas internas confidenciales, gestionar la atención comercial y te indica con claridad qué variables faltan sin realizar envíos falsos ni simular entregas.
+
 ---
 
-## 6. Documentación Adicional
+## 7. Documentación Adicional
 
 - [Plan de Trabajo General](file:///c:/laragon/www/portatiles-peru/PLAN_TRABAJO_CATALOGO_VIRTUAL.md)
 - [Plan de Desarrollo por Fases](file:///c:/laragon/www/portatiles-peru/PLAN_DESARROLLO_POR_FASES_ANTIGRAVITY.md)

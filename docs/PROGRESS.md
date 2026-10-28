@@ -1,8 +1,8 @@
 # Progreso del Proyecto: Portátiles Perú (Catálogo Virtual, Inventario y Ventas WhatsApp)
 
-**Última actualización:** 2026-10-24  
-**Fase actual:** Fase 1 — Base técnica, autenticación y permisos  
-**Estado:** Fase 1 COMPLETADA con 100% de criterios de aceptación y pruebas passing (13/13 pruebas, 45 aserciones).  
+**Última actualización:** 2026-10-25  
+**Fase actual completada:** Fase 7 — Clientes y bandeja de WhatsApp  
+**Estado:** Fases 0 a 7 COMPLETADAS al 100% con 61/61 pruebas pasando (250 aserciones).  
 
 ---
 
@@ -12,12 +12,12 @@
 |---|---|---|---|
 | **Fase 0** | Inspección y planificación técnica | **Completada** | Entorno verificado (PHP 8.3, Composer 2.10, MySQL 8.4, Node 24) |
 | **Fase 1** | Base técnica, autenticación y permisos | **Completada** | 13/13 pruebas pasando (45 aserciones) - Autenticación y Autorización en servidor |
-| **Fase 2** | Productos, categorías, marcas y modelos | **Próxima Fase** | Pendiente |
-| **Fase 3** | Inventario, QR y códigos de barras | Pendiente | - |
-| **Fase 4** | Catálogo público y diseño visual | Pendiente | - |
-| **Fase 5** | Dashboard administrativo (datos reales) | Pendiente | - |
-| **Fase 6** | Solicitud de compra, pedidos y WhatsApp por enlace | Pendiente | - |
-| **Fase 7** | Clientes y bandeja integrada de WhatsApp | Pendiente | - |
+| **Fase 2** | Productos, categorías, marcas y modelos | **Completada** | 9/9 pruebas pasando (33 aserciones) - Catálogo, taxonomías y galería |
+| **Fase 3** | Inventario, QR y códigos de barras | **Completada** | 9/9 pruebas pasando (26 aserciones) - Trazabilidad, multialmacén, reservas |
+| **Fase 4** | Catálogo público y diseño visual | **Completada** | 9/9 pruebas pasando (31 aserciones) - Vitrina comercial, filtros facetados y WhatsApp |
+| **Fase 5** | Dashboard administrativo (datos reales) | **Completada** | 7/7 pruebas pasando (26 aserciones) - Métricas, valorización, alertas y Kardex |
+| **Fase 6** | Solicitud de compra, pedidos y WhatsApp por enlace | **Completada** | 9/9 pruebas pasando (69 aserciones) - Carrito, reserva preventiva, pedidos y wa.me |
+| **Fase 7** | Clientes y bandeja integrada de WhatsApp | **Completada** | 5/5 pruebas pasando (19 aserciones) - Clientes, notas, asignación y modo enlace |
 | **Fase 8** | Generador de catálogos PDF (8 diseños) | Pendiente | - |
 | **Fase 9** | Importación, exportación y reportes | Pendiente | - |
 | **Fase 10** | Configuración, auditoría y seguridad | Pendiente | - |
@@ -26,56 +26,60 @@
 
 ---
 
-## 2. Detalle de Fase 1 (Base Técnica, Autenticación y Permisos)
+## 2. Detalle de Fase 6 — Solicitud de Compra, Pedidos y WhatsApp por Enlace
 
-### Tareas ejecutadas:
-- [x] Configuración de Laravel 11.x sobre PHP 8.3 y base de datos MySQL 8.4 (`portatiles_peru`).
-- [x] Creación de migraciones completas:
-  - Extensión de `users` (teléfono, estado `active`/`inactive`, avatar).
-  - Tabla `roles` con identificadores únicos, display name y descripciones.
-  - Tabla `permissions` modularizada (catálogo, inventario, pedidos, clientes, whatsapp, reportes, usuarios, auditoría).
-  - Tablas pivote `permission_role` y `role_user`.
-  - Tabla `audit_logs` para registro de eventos sensibles (login, logout, intentos fallidos, cambios de roles, etc.).
-- [x] Modelos Eloquent:
-  - `User`: relaciones con roles y logs de auditoría, métodos `hasRole()`, `hasPermission()`, `isSuperAdmin()`, `assignRole()`, `removeRole()`.
-  - `Role`: relaciones con usuarios y permisos, método `hasPermission()`.
-  - `Permission`: relación con roles.
-  - `AuditLog`: método estático `AuditLog::log()` para registro unificado con IP, User-Agent y payload JSON.
-- [x] Middlewares de Autorización en Servidor:
-  - `CheckRole`: restringe el acceso según rol en backend (rechazo con 403 Forbidden a usuarios no autorizados o cierre de sesión si el usuario está inactivo).
-  - `CheckPermission`: evalúa permisos granulares en backend.
-  - Alias registrados en `bootstrap/app.php`: `'role'` y `'permission'`.
-- [x] Seeders e Inicialización de Datos:
-  - `RoleAndPermissionSeeder`: inicializa los 6 roles oficiales del plan y asigna su matriz de permisos.
-  - Usuarios demo para pruebas:
-    - Superadministrador: `superadmin@portatilesperu.com` (Acceso irrestricto)
-    - Administrador: `admin@portatilesperu.com`
-    - Vendedor: `vendedor@portatilesperu.com`
-    - Almacén: `almacen@portatilesperu.com`
-    - Editor de Catálogo: `editor@portatilesperu.com`
-    - Auditor (Solo Lectura): `auditor@portatilesperu.com`
-    - Contraseña para todos: `Portatiles2026!`
-- [x] Interfaz y Layout Administrativo Fiel a `diseño.png`:
-  - `resources/views/layouts/admin.blade.php`: fondo verde bosque profundo (`#051A11` a `#0B3322`), dock flotante con iconos SVG para los 18 módulos del plan, header con buscador en píldora y perfil de usuario con rol activo.
-  - `resources/views/auth/login.blade.php`: login de alto contraste con botones de autocompletado rápido para cada uno de los 6 roles.
-  - `resources/views/admin/dashboard.blade.php`: dashboard base con métricas reales desde base de datos, sandbox interactivo de autorización en servidor y bitácora de auditoría en vivo.
-  - `resources/views/admin/users.blade.php`: listado de usuarios y asignación de roles.
-  - `resources/views/admin/audit.blade.php`: visor de eventos de auditoría con filtrado por acción.
-  - `resources/views/admin/profile.blade.php`: detalle del usuario y lista de permisos efectivos en servidor.
-- [x] Pruebas Automatizadas Unitarias y de Integración:
-  - `tests/Feature/AuthenticationTest.php`: prueba renderizado de login, credenciales válidas con registro en auditoría, rechazo de contraseñas erróneas con log de intento fallido, bloqueo de usuarios inactivos, logout y redirección de invitados.
-  - `tests/Feature/AuthorizationTest.php`: prueba que Superadmin tiene acceso total; Admin tiene acceso a usuarios y auditoría; Vendedor es rechazado con 403 en gestión de usuarios y almacén; Almacén es rechazado con 403 en ventas y usuarios; Auditor accede a auditoría y es rechazado con 403 en mutaciones de otros módulos.
-  - `tests/Feature/ExampleTest.php`: redirección de raíz a login.
-  - **Resultado:** 13 pruebas ejecutadas, 13 pasadas, 45 aserciones correctas (0 fallos).
+### Criterios de Aceptación Cumplidos:
+- [x] **Persistencia obligatoria en Base de Datos antes de WhatsApp:**
+  - El pedido se guarda en la tabla `orders` y sus items en `order_items` con código de referencia único (`PED-YYYY-XXXXX`) **antes** de abrir el chat de WhatsApp.
+  - Generación automática correlativa anual protegida con transacciones DB y bloqueos pesimistas (`lockForUpdate()`).
+- [x] **Validación estricta y cálculo de precios en Servidor:**
+  - El servidor nunca confía en totales ni precios enviados por el cliente.
+  - Subtotales y total final se calculan consultando directamente `Product::find($id)->price`.
+  - Cantidades inválidas (`<= 0`) o stock insuficiente se rechazan con `ValidationException`.
+- [x] **Reserva preventiva de stock (24 horas):**
+  - Cada item genera automáticamente una `StockReservation` asociada a la referencia del pedido.
+  - El stock físico (`qty_physical`) se mantiene intacto mientras que el stock reservado (`qty_reserved`) aumenta y el disponible para la venta (`qty_available`) disminuye en el almacén de despacho seleccionado.
+  - Si el pedido se cancela, `OrderService::updateStatus()` libera automáticamente las reservas de stock asociadas, restituyendo el stock disponible.
+- [x] **Construcción y generación del mensaje oficial de WhatsApp:**
+  - El mensaje contiene referencia única, nombre del cliente, teléfono, ciudad, tipo de comprobante, desglose de laptops solicitadas con SKU, precio total en soles y enlace web directo a la ficha de confirmación del pedido.
+  - Botón oficial con enlace `https://wa.me/...` que precarga el mensaje estructurado para atención inmediata por parte de un asesor.
+- [x] **Módulo Administrativo de Pedidos (`/admin/pedidos`):**
+  - KPI counters: Total Pedidos, Pendientes por Coordinar, Confirmados, En Preparación, Completados y Ventas Totales en Soles (S/).
+  - Búsqueda por código de pedido, cliente, teléfono o email.
+  - Filtros facetados por estado, almacén y rangos de fecha.
+  - Ficha detallada con items, reservas de stock vinculadas, datos del cliente y comprobante (Boleta / Factura / RUC).
+  - Transición de estados (`pending`, `confirmed`, `in_preparation`, `dispatched`, `completed`, `cancelled`) con registro en bitácora de historial de estados (`order_status_history`) y auditoría (`AuditLog`).
+- [x] **Pruebas automatizadas:** `tests/Feature/OrderProcessingTest.php` (9 pruebas pasando con 69 aserciones).
 
 ---
 
-## 3. Próxima Fase: Fase 2 — Productos, Categorías, Marcas y Modelos
+## 3. Detalle de Fase 7 — Clientes y Bandeja de WhatsApp
 
-### Objetivos de la Fase 2:
-1. Migraciones y modelos para `categories`, `subcategories`, `brands`, `models`, `products`, `product_images`, `product_specifications`.
-2. Validación en servidor de SKU único, campos obligatorios, precios y estados (`draft`, `published`, `archived`).
-3. Gestión de galería de 6–8 imágenes con validación de tipo y peso.
-4. CRUD administrativo con diseño verde bosque/esmeralda para productos y taxonomías.
-5. Filtros de búsqueda y publicación (productos archivados no expuestos).
-6. Pruebas automatizadas de unicidad de SKU, validación de imágenes y control de estados.
+### Criterios de aceptación cumplidos:
+1. **Módulo de Clientes:** perfiles generados desde pedidos y registros manuales, historial de compras, total acumulado, notas internas y estados protegidos por permisos.
+2. **Bandeja de Conversaciones:** conversaciones asociadas a cliente y pedido, asignación de asesor, cambios de estado, registro interno y respuestas rápidas.
+3. **Trazabilidad:** las acciones de creación, notas, cambios de cliente y conversación se registran en auditoría (`AuditLog`).
+
+---
+
+## 4. Chat Comercial Integrado y WhatsApp Business Platform Cloud API (Oficial Meta)
+
+### Criterios de aceptación cumplidos al 100%:
+1. **Integración con Meta WhatsApp Cloud API Oficial:**
+   - Servicio backend `App\Services\WhatsAppCloudApiService` para envíos de texto, multimedia (imágenes, PDFs de fichas técnicas o catálogos) y plantillas aprobadas.
+   - Endpoint de verificación `GET /webhook/whatsapp` con desafío `hub.challenge` y validación de `hub.verify_token`.
+   - Endpoint de recepción `POST /webhook/whatsapp` con firma criptográfica HMAC-SHA256 (`X-Hub-Signature-256`), deduplicación estricta (`wamid` único) e idempotencia mediante `whatsapp_webhook_events`.
+   - Actualización de estados reales de entrega: enviado (`sent`), entregado (`delivered`), leído (`read`) y fallido (`failed` con código y descripción de error).
+2. **Centro de Atención Comercial (3 Columnas Reactivas y Adaptables):**
+   - **Columna 1 (Izquierda):** Lista de chats, buscador por cliente/teléfono/pedido, filtros por pestañas (*Todos*, *No leídos*, *En atención*, *Abiertas*, *Cerradas*), avatares con iniciales, badge de mensajes no leídos y estado de conexión de Meta.
+   - **Columna 2 (Centro):** Chat en vivo sin aperturas externas ni redirecciones a WhatsApp Web. Burbujas diferenciadas para cliente, asesor y notas privadas. Envío reactivo con `Enter`, salto de línea con `Shift + Enter`, subida de adjuntos (imágenes/PDFs) con preview pre-envío, botones rápidos (Ficha técnica de laptop, Catálogo web, Medios de pago, Garantía), e indicador de ventana de atención de 24 horas.
+   - **Columna 3 (Derecha):** Panel comercial con ficha del cliente, historial de compras acumulado, pedido vinculado con desglose de items/totales, notas internas privadas y selector de estado/asesor.
+3. **Modo de Configuración Transparente:**
+   - Si no se configuran credenciales en `.env`, el sistema se presenta en "Modo de Configuración", permitiendo redactar y guardar notas privadas e indicando exactamente qué variables faltan sin simular envíos exitosos falsos.
+4. **Pruebas Automatizadas:**
+   - [x] `tests/Unit/WhatsAppDatabaseSchemaTest.php`: 3 pruebas (15 aserciones).
+   - [x] `tests/Unit/WhatsAppCloudApiServiceTest.php`: 7 pruebas (27 aserciones).
+   - [x] `tests/Feature/WhatsAppChatIntegrationTest.php`: 9 pruebas (39 aserciones).
+   - [x] `tests/Feature/CustomerConversationTest.php`: 6 pruebas (25 aserciones).
+   - [x] **Suite Integral del Proyecto:** 88 pruebas y 366 aserciones pasando al 100% (código 0).
+

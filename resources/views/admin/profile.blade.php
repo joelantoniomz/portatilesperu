@@ -38,6 +38,15 @@
         </form>
     </div>
 
+    <form method="POST" action="{{ route('admin.profile.update') }}" class="card-surface grid gap-4 border border-slate-100 p-6 sm:grid-cols-2">
+        @csrf @method('PUT')
+        <div class="sm:col-span-2"><h3 class="font-extrabold text-slate-900">Editar mi perfil</h3><p class="text-xs text-slate-500">Actualice sus datos y la URL de su foto de perfil.</p></div>
+        <input name="name" value="{{ old('name', $user->name) }}" required placeholder="Nombre" class="rounded-xl border border-slate-200 px-3 py-2.5 text-sm">
+        <input name="phone" value="{{ old('phone', $user->phone) }}" placeholder="Teléfono" class="rounded-xl border border-slate-200 px-3 py-2.5 text-sm">
+        <input name="avatar_url" value="{{ old('avatar_url', $user->avatar_url) }}" type="url" placeholder="URL de foto de perfil" class="rounded-xl border border-slate-200 px-3 py-2.5 text-sm sm:col-span-2">
+        <button class="w-fit rounded-xl bg-emerald-600 px-4 py-2.5 text-xs font-bold text-white hover:bg-emerald-500">Guardar perfil</button>
+    </form>
+
     <!-- Lista de Permisos Efectivos en Servidor -->
     <div class="card-surface p-6 border border-slate-100 space-y-4">
         <div>

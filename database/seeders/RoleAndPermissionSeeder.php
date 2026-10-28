@@ -93,7 +93,7 @@ class RoleAndPermissionSeeder extends Seeder
                 [
                     'display_name' => $perm['display_name'],
                     'module' => $perm['module'],
-                    'description' => 'Permite ' . strtolower($perm['display_name']),
+                    'description' => 'Permite '.strtolower($perm['display_name']),
                 ]
             );
             $allPermissions[$perm['name']] = $permissionModel->id;

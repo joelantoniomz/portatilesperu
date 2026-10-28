@@ -38,10 +38,11 @@ class AuthController extends Controller
             'password.required' => 'La contraseña es obligatoria.',
         ]);
 
-        $throttleKey = Str::lower($credentials['email']) . '|' . $request->ip();
+        $throttleKey = Str::lower($credentials['email']).'|'.$request->ip();
 
         if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
             $seconds = RateLimiter::availableIn($throttleKey);
+
             return back()->withErrors([
                 'email' => "Demasiados intentos fallidos. Intente nuevamente en {$seconds} segundos.",
             ])->onlyInput('email');

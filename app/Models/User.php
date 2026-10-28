@@ -49,7 +49,6 @@ class User extends Authenticatable
 
     /**
      * Comprobar si el usuario tiene uno o varios roles específicos.
-     * @param string|array $roles
      */
     public function hasRole(string|array $roles): bool
     {
@@ -58,6 +57,7 @@ class User extends Authenticatable
         }
 
         $roleList = is_array($roles) ? $roles : func_get_args();
+
         return $this->roles->pluck('name')->intersect($roleList)->isNotEmpty();
     }
 

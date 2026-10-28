@@ -11,11 +11,11 @@ class CheckPermission
     /**
      * Handle an incoming request.
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param  Closure(Request): (Response)  $next
      */
     public function handle(Request $request, Closure $next, string $permission): Response
     {
-        if (!auth()->check()) {
+        if (! auth()->check()) {
             return redirect()->route('login');
         }
 
@@ -31,8 +31,8 @@ class CheckPermission
             ]);
         }
 
-        if (!$user->hasPermission($permission)) {
-            abort(403, 'Acceso denegado: No posee el permiso requerido para ejecutar esta acción (' . $permission . ').');
+        if (! $user->hasPermission($permission)) {
+            abort(403, 'Acceso denegado: No posee el permiso requerido para ejecutar esta acción ('.$permission.').');
         }
 
         return $next($request);
