@@ -1,0 +1,17 @@
+.git
+.github
+node_modules
+vendor
+tests
+.env
+.env.*
+!.env.example
+storage/*.key
+.phpunit.result.cache
+npm-debug.log
+yarn-error.log
+.idea
+.vscode
+.fleet
+.claude
+.codex
