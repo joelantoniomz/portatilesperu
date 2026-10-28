@@ -47,12 +47,7 @@
     <div class="w-full max-w-4xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
         <!-- Columna Izquierda: Branding y Contexto -->
         <div class="lg:col-span-5 text-white space-y-6">
-            <div class="inline-flex items-center gap-3 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-semibold">
-                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                <span>Fase 1: Autenticación & Permisos</span>
-            </div>
-
-            <div class="space-y-3">
+            <div class="space-y-4">
                 <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-600 to-emerald-400 flex items-center justify-center shadow-xl shadow-emerald-500/30">
                     <svg class="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -64,34 +59,18 @@
                 </p>
             </div>
 
-            <!-- Accesos Rápidos de Prueba para cada Rol -->
-            <div class="p-4 rounded-2xl bg-forest-850/80 border border-emerald-500/20 space-y-3">
-                <p class="text-xs font-bold text-emerald-300 uppercase tracking-wider">Cuentas demo para pruebas por rol:</p>
-                <div class="grid grid-cols-2 gap-2 text-xs">
-                    <button type="button" onclick="fillLogin('superadmin@portatilesperu.com', 'Portatiles2026!')" class="p-2 rounded-xl bg-forest-800 hover:bg-emerald-600/30 border border-white/5 text-left text-emerald-100 transition-colors">
-                        <span class="block font-bold">Superadmin</span>
-                        <span class="text-[10px] text-emerald-300/70">Acceso total</span>
-                    </button>
-                    <button type="button" onclick="fillLogin('admin@portatilesperu.com', 'Portatiles2026!')" class="p-2 rounded-xl bg-forest-800 hover:bg-emerald-600/30 border border-white/5 text-left text-emerald-100 transition-colors">
-                        <span class="block font-bold">Admin</span>
-                        <span class="text-[10px] text-emerald-300/70">Gestión general</span>
-                    </button>
-                    <button type="button" onclick="fillLogin('vendedor@portatilesperu.com', 'Portatiles2026!')" class="p-2 rounded-xl bg-forest-800 hover:bg-emerald-600/30 border border-white/5 text-left text-emerald-100 transition-colors">
-                        <span class="block font-bold">Vendedor</span>
-                        <span class="text-[10px] text-emerald-300/70">Pedidos & chats</span>
-                    </button>
-                    <button type="button" onclick="fillLogin('almacen@portatilesperu.com', 'Portatiles2026!')" class="p-2 rounded-xl bg-forest-800 hover:bg-emerald-600/30 border border-white/5 text-left text-emerald-100 transition-colors">
-                        <span class="block font-bold">Almacén</span>
-                        <span class="text-[10px] text-emerald-300/70">Stock & movimientos</span>
-                    </button>
-                    <button type="button" onclick="fillLogin('editor@portatilesperu.com', 'Portatiles2026!')" class="p-2 rounded-xl bg-forest-800 hover:bg-emerald-600/30 border border-white/5 text-left text-emerald-100 transition-colors">
-                        <span class="block font-bold">Editor Catálogo</span>
-                        <span class="text-[10px] text-emerald-300/70">Productos & PDF</span>
-                    </button>
-                    <button type="button" onclick="fillLogin('auditor@portatilesperu.com', 'Portatiles2026!')" class="p-2 rounded-xl bg-forest-800 hover:bg-emerald-600/30 border border-white/5 text-left text-emerald-100 transition-colors">
-                        <span class="block font-bold">Auditor</span>
-                        <span class="text-[10px] text-emerald-300/70">Solo lectura</span>
-                    </button>
+            <div class="pt-4 border-t border-emerald-500/20 space-y-3 text-xs text-emerald-200/90">
+                <div class="flex items-center gap-2.5">
+                    <span class="w-5 h-5 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xs font-bold">✓</span>
+                    <span>Control de stock en tiempo real y ventas seguras</span>
+                </div>
+                <div class="flex items-center gap-2.5">
+                    <span class="w-5 h-5 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xs font-bold">✓</span>
+                    <span>Generador de catálogos en PDF con imágenes</span>
+                </div>
+                <div class="flex items-center gap-2.5">
+                    <span class="w-5 h-5 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xs font-bold">✓</span>
+                    <span>Asistente inteligente con Gemini AI</span>
                 </div>
             </div>
         </div>
@@ -167,12 +146,5 @@
             </div>
         </div>
     </div>
-
-    <script>
-        function fillLogin(email, password) {
-            document.getElementById('email').value = email;
-            document.getElementById('password').value = password;
-        }
-    </script>
 </body>
 </html>
