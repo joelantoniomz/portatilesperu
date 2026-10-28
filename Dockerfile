@@ -58,9 +58,10 @@ COPY --from=frontend /app/public/build ./public/build
 # Instalar dependencias PHP de producción
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-# Permisos para storage y cache
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
-    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+# Crear base de datos sqlite y permisos para storage, cache y database
+RUN touch /var/www/html/database/database.sqlite \
+    && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/database \
+    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/database
 
 # Script de entrada para Render
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
@@ -70,3 +71,4 @@ RUN chmod +x /usr/local/bin/entrypoint.sh
 EXPOSE 80 10000
 
 ENTRYPOINT ["entrypoint.sh"]
+
