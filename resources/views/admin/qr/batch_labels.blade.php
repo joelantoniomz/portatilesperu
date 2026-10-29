@@ -227,7 +227,17 @@
             </h1>
             <p>Formato de impresión optimizado para pegar en las cajas de los productos con SKU, precio y especificaciones.</p>
         </div>
-        <div style="display: flex; gap: 8px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="display:flex; align-items:center; gap:6px; background:#f8fafc; padding:4px 8px; border-radius:9999px; border:1px solid #cbd5e1; font-size:12px;">
+                <span style="color:#64748b; font-weight:600; padding-left:4px;">Modo QR:</span>
+                <a href="{{ request()->fullUrlWithQuery(['mode' => 'url']) }}" class="btn" style="padding:6px 12px; font-size:11px; {{ ($qrMode ?? 'url') === 'url' ? 'background:#0c3823; color:#fff;' : 'background:#e2e8f0; color:#475569;' }}">
+                    📱 Celular (Catálogo Web)
+                </a>
+                <a href="{{ request()->fullUrlWithQuery(['mode' => 'sku']) }}" class="btn" style="padding:6px 12px; font-size:11px; {{ ($qrMode ?? 'url') === 'sku' ? 'background:#0c3823; color:#fff;' : 'background:#e2e8f0; color:#475569;' }}">
+                    🏷️ Solo SKU
+                </a>
+            </div>
+
             <button onclick="window.print()" class="btn btn-primary">
                 <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4H9v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
@@ -256,7 +266,7 @@
             <div class="label-name" title="{{ $product->name }}">{{ $product->name }}</div>
 
             <div class="qr-wrapper">
-                <img class="qr-img" src="{{ route('admin.qr.svg', $product) }}" alt="QR {{ $product->sku }}">
+                <img class="qr-img" src="{{ route('admin.qr.svg', ['product' => $product, 'mode' => $qrMode ?? 'url']) }}" alt="QR {{ $product->sku }}">
             </div>
 
             <div class="label-sku">{{ $product->sku }}</div>

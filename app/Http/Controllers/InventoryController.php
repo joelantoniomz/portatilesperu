@@ -237,22 +237,52 @@ class InventoryController extends Controller
     public function scanLookup(Request $request)
     {
         $request->validate([
-            'code' => 'required|string|max:100',
+            'code' => 'required|string|max:255',
         ]);
 
         $code = trim($request->code);
-        $product = Product::where('sku', $code)
-            ->orWhere('barcode', $code)
-            ->with([
-                'brand:id,name',
-                'category:id,name',
-                'inventoryBalances.warehouse:id,name,code',
-            ])
-            ->first();
+        $product = null;
+
+        // Si el código escaneado es una URL completa (ej. generada por el QR o cámara)
+        if (str_contains($code, '/catalogo/')) {
+            $parsedUrl = parse_url($code);
+
+            // Intentar por parámetro ?sku= si existe
+            if (! empty($parsedUrl['query'])) {
+                parse_str($parsedUrl['query'], $queryParams);
+                if (! empty($queryParams['sku'])) {
+                    $product = Product::where('sku', trim($queryParams['sku']))->first();
+                }
+            }
+
+            // Si no se encontró por query param, extraer el slug de la ruta /catalogo/{slug}
+            if (! $product && ! empty($parsedUrl['path'])) {
+                $pathParts = array_filter(explode('/', trim($parsedUrl['path'], '/')));
+                $slug = end($pathParts);
+                if ($slug && $slug !== 'catalogo') {
+                    $product = Product::where('slug', $slug)->first();
+                }
+            }
+        }
+
+        // Búsqueda directa por SKU, Código de barras, QR Code o Slug
+        if (! $product) {
+            $product = Product::where('sku', $code)
+                ->orWhere('barcode', $code)
+                ->orWhere('qr_code', $code)
+                ->orWhere('slug', $code)
+                ->first();
+        }
 
         if (! $product) {
             return response()->json(['found' => false, 'message' => 'Producto no encontrado.'], 404);
         }
+
+        $product->loadMissing([
+            'brand:id,name',
+            'category:id,name',
+            'inventoryBalances.warehouse:id,name,code',
+        ]);
 
         $globalStock = $this->inventoryService->getGlobalStock($product->id);
 

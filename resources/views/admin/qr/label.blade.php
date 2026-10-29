@@ -188,6 +188,17 @@
             </svg>
             Imprimir Etiqueta
         </button>
+
+        <div style="display:flex; align-items:center; gap:6px; background:#fff; padding:4px 8px; border-radius:9999px; border:1px solid #cbd5e1; font-size:12px;">
+            <span style="color:#64748b; font-weight:600; padding-left:4px;">Modo QR:</span>
+            <a href="{{ route('admin.qr.label', ['product' => $product, 'mode' => 'url']) }}" class="btn" style="padding:6px 12px; font-size:11px; {{ ($qrMode ?? 'url') === 'url' ? 'background:#059669; color:#fff;' : 'background:#f1f5f9; color:#475569;' }}">
+                📱 Celular (Catálogo Web)
+            </a>
+            <a href="{{ route('admin.qr.label', ['product' => $product, 'mode' => 'sku']) }}" class="btn" style="padding:6px 12px; font-size:11px; {{ ($qrMode ?? 'url') === 'sku' ? 'background:#059669; color:#fff;' : 'background:#f1f5f9; color:#475569;' }}">
+                🏷️ Solo SKU
+            </a>
+        </div>
+
         <button onclick="window.close()" class="btn btn-secondary">
             Cerrar
         </button>
@@ -200,12 +211,12 @@
         </div>
 
         <div class="qr-wrapper">
-            <img src="{{ route('admin.qr.svg', $product) }}" alt="QR {{ $product->sku }}">
+            <img src="{{ route('admin.qr.svg', ['product' => $product, 'mode' => $qrMode ?? 'url']) }}" alt="QR {{ $product->sku }}">
         </div>
 
         <div class="label-sku">{{ $product->sku }}</div>
         <div class="label-specs">
-            {{ $product->brand?->name ?? 'Laptop' }} &bull; Escanee para consultar stock
+            {{ $product->brand?->name ?? 'Laptop' }} &bull; {{ ($qrMode ?? 'url') === 'url' ? 'Escanee con su celular para ver precio, fotos y stock' : 'Escanee con lector láser para control de inventario' }}
         </div>
 
         <div class="label-footer">

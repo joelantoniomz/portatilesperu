@@ -4,26 +4,32 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\Product;
+use BaconQrCode\Renderer\Image\SvgImageBackEnd;
+use BaconQrCode\Renderer\ImageRenderer;
+use BaconQrCode\Renderer\RendererStyle\RendererStyle;
+use BaconQrCode\Writer;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 /**
- * QrController — Genera QR codes y etiquetas imprimibles por producto.
+ * QrController — Genera códigos QR reales y etiquetas imprimibles por producto.
  *
- * Usa la librería simplesoftwareio/simple-qrcode (ya incluida como dep de la Fase 2)
- * o genera el QR como SVG/PNG inline via endroid/qr-code si está disponible.
- *
- * El escaneo QR devuelve solo el SKU del producto; NO modifica stock.
+ * Utiliza BaconQrCode para producir matrices QR estándar (ISO/IEC 18004),
+ * 100% escaneables desde teléfonos móviles (cámara nativa, Google Lens, iOS, Android)
+ * y pistolas lectoras USB / Bluetooth.
  */
 class QrController extends Controller
 {
     /**
      * Muestra la etiqueta imprimible de un producto (QR + SKU + nombre + precio).
      */
-    public function label(Product $product): View
+    public function label(Request $request, Product $product): View
     {
-        return view('admin.qr.label', compact('product'));
+        $qrMode = $request->query('mode', 'url');
+
+        return view('admin.qr.label', compact('product', 'qrMode'));
     }
 
     /**
@@ -35,7 +41,10 @@ class QrController extends Controller
             'category_id' => 'nullable|integer|exists:categories,id',
             'product_ids' => 'nullable|array|max:200',
             'product_ids.*' => 'integer|exists:products,id',
+            'mode' => 'nullable|in:url,sku',
         ]);
+
+        $qrMode = $request->input('mode', 'url');
 
         $query = Product::query()->with(['brand:id,name', 'category:id,name']);
 
@@ -52,106 +61,67 @@ class QrController extends Controller
 
         $products = $query->where('status', '!=', 'archived')->orderBy('name')->get();
 
-        return view('admin.qr.batch_labels', compact('products', 'selectedCategory'));
+        return view('admin.qr.batch_labels', compact('products', 'selectedCategory', 'qrMode'));
     }
 
     /**
-     * Devuelve el SVG del QR code de un producto (para embeber en vista o descargar).
+     * Devuelve el SVG del código QR real de un producto.
      *
-     * El QR contiene únicamente el SKU del producto para máxima compatibilidad
-     * con cualquier lector de código QR/barras.
+     * - Modo 'url' (por defecto): Codifica la URL pública del producto en el catálogo web
+     *   para que al escanear desde cualquier celular se abra automáticamente la ficha,
+     *   fotos, precio y stock en tiempo real.
+     * - Modo 'sku': Codifica únicamente el SKU (para pistolas lectoras de inventario).
      */
-    public function svg(Product $product): Response
+    public function svg(Request $request, Product $product): Response
     {
-        // Generar SVG del QR manualmente para no depender de una librería externa
-        // El contenido del QR es el SKU del producto
-        $sku = $product->sku;
+        $mode = $request->query('mode', 'url');
 
-        // Usamos la URL de la API pública de QR (google charts compatible con privacidad)
-        // En producción se recomienda endroid/qr-code o simplesoftwareio/simple-qrcode
-        $svgContent = $this->generateQrSvgPlaceholder($sku, $product->name);
+        if ($mode === 'sku') {
+            $qrContent = $product->sku;
+        } else {
+            $slug = $product->slug ?: Str::slug($product->name.'-'.$product->sku);
+            $qrContent = route('catalogo.detalle', $slug);
+        }
+
+        $svgContent = $this->generateRealQrSvg($qrContent);
 
         return response($svgContent, 200, [
             'Content-Type' => 'image/svg+xml',
-            'Content-Disposition' => 'inline; filename="qr-'.$sku.'.svg"',
+            'Content-Disposition' => 'inline; filename="qr-'.$product->sku.'.svg"',
             'Cache-Control' => 'public, max-age=3600',
         ]);
     }
 
     /**
-     * Genera una representación SVG de un código QR usando el patrón de datos estándar.
-     * En producción, reemplazar con endroid/qr-code para QR real escaneables.
+     * Genera un SVG de código QR estándar ISO escaneable con BaconQrCode.
      */
-    private function generateQrSvgPlaceholder(string $sku, string $productName): string
+    private function generateRealQrSvg(string $content): string
     {
-        // Generamos un SVG que incluye un cuadro de QR estilizado con el SKU
-        // Para QR real en producción instalar: composer require endroid/qr-code
-        $escapedSku = htmlspecialchars($sku, ENT_XML1);
-        $escapedName = htmlspecialchars(mb_substr($productName, 0, 30), ENT_XML1);
+        try {
+            $renderer = new ImageRenderer(
+                new RendererStyle(240, 1),
+                new SvgImageBackEnd
+            );
+            $writer = new Writer($renderer);
+
+            return $writer->writeString($content);
+        } catch (\Throwable $e) {
+            // Fallback en caso de contingencia
+            return $this->generateFallbackQrSvg($content);
+        }
+    }
+
+    /**
+     * Fallback SVG estructurado en caso de fallo inesperado de la librería.
+     */
+    private function generateFallbackQrSvg(string $content): string
+    {
+        $escaped = htmlspecialchars($content, ENT_XML1);
 
         return <<<SVG
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 220" width="200" height="220">
-          <rect width="200" height="220" fill="white" rx="8"/>
-
-          <!-- Patrón de QR simulado (reemplazar con QR real en producción) -->
-          <g transform="translate(20,20)">
-            <!-- Esquinas de posicionamiento -->
-            <rect x="0"   y="0"   width="35" height="35" fill="none" stroke="#000" stroke-width="3"/>
-            <rect x="5"   y="5"   width="25" height="25" fill="#000"/>
-            <rect x="125" y="0"   width="35" height="35" fill="none" stroke="#000" stroke-width="3"/>
-            <rect x="130" y="5"   width="25" height="25" fill="#000"/>
-            <rect x="0"   y="125" width="35" height="35" fill="none" stroke="#000" stroke-width="3"/>
-            <rect x="5"   y="130" width="25" height="25" fill="#000"/>
-
-            <!-- Módulos internos del QR (patrón genérico) -->
-            <rect x="45"  y="10"  width="8"  height="8"  fill="#000"/>
-            <rect x="60"  y="10"  width="8"  height="8"  fill="#000"/>
-            <rect x="75"  y="10"  width="8"  height="8"  fill="#000"/>
-            <rect x="90"  y="10"  width="8"  height="8"  fill="#000"/>
-            <rect x="105" y="10"  width="8"  height="8"  fill="#000"/>
-            <rect x="45"  y="25"  width="8"  height="8"  fill="#000"/>
-            <rect x="75"  y="25"  width="8"  height="8"  fill="#000"/>
-            <rect x="105" y="25"  width="8"  height="8"  fill="#000"/>
-            <rect x="45"  y="40"  width="8"  height="8"  fill="#000"/>
-            <rect x="60"  y="40"  width="8"  height="8"  fill="#000"/>
-            <rect x="90"  y="40"  width="8"  height="8"  fill="#000"/>
-            <rect x="10"  y="45"  width="8"  height="8"  fill="#000"/>
-            <rect x="25"  y="45"  width="8"  height="8"  fill="#000"/>
-            <rect x="45"  y="55"  width="8"  height="8"  fill="#000"/>
-            <rect x="60"  y="55"  width="8"  height="8"  fill="#000"/>
-            <rect x="75"  y="55"  width="8"  height="8"  fill="#000"/>
-            <rect x="90"  y="55"  width="8"  height="8"  fill="#000"/>
-            <rect x="105" y="55"  width="8"  height="8"  fill="#000"/>
-            <rect x="120" y="55"  width="8"  height="8"  fill="#000"/>
-            <rect x="10"  y="60"  width="8"  height="8"  fill="#000"/>
-            <rect x="25"  y="60"  width="8"  height="8"  fill="#000"/>
-            <rect x="60"  y="70"  width="8"  height="8"  fill="#000"/>
-            <rect x="90"  y="70"  width="8"  height="8"  fill="#000"/>
-            <rect x="120" y="70"  width="8"  height="8"  fill="#000"/>
-            <rect x="10"  y="75"  width="8"  height="8"  fill="#000"/>
-            <rect x="45"  y="75"  width="8"  height="8"  fill="#000"/>
-            <rect x="75"  y="75"  width="8"  height="8"  fill="#000"/>
-            <rect x="105" y="75"  width="8"  height="8"  fill="#000"/>
-            <rect x="10"  y="90"  width="8"  height="8"  fill="#000"/>
-            <rect x="25"  y="90"  width="8"  height="8"  fill="#000"/>
-            <rect x="45"  y="90"  width="8"  height="8"  fill="#000"/>
-            <rect x="60"  y="90"  width="8"  height="8"  fill="#000"/>
-            <rect x="90"  y="90"  width="8"  height="8"  fill="#000"/>
-            <rect x="120" y="90"  width="8"  height="8"  fill="#000"/>
-            <rect x="45"  y="105" width="8"  height="8"  fill="#000"/>
-            <rect x="75"  y="105" width="8"  height="8"  fill="#000"/>
-            <rect x="105" y="105" width="8"  height="8"  fill="#000"/>
-            <rect x="120" y="105" width="8"  height="8"  fill="#000"/>
-            <rect x="45"  y="120" width="8"  height="8"  fill="#000"/>
-            <rect x="60"  y="120" width="8"  height="8"  fill="#000"/>
-            <rect x="90"  y="120" width="8"  height="8"  fill="#000"/>
-            <rect x="105" y="120" width="8"  height="8"  fill="#000"/>
-            <rect x="120" y="120" width="8"  height="8"  fill="#000"/>
-          </g>
-
-          <!-- SKU y nombre del producto -->
-          <text x="100" y="192" text-anchor="middle" font-family="monospace" font-size="12" font-weight="bold" fill="#000">{$escapedSku}</text>
-          <text x="100" y="210" text-anchor="middle" font-family="sans-serif" font-size="8" fill="#555">{$escapedName}</text>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+            <rect width="200" height="200" fill="#ffffff" />
+            <text x="100" y="100" font-size="10" text-anchor="middle" fill="#333">{$escaped}</text>
         </svg>
         SVG;
     }
