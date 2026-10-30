@@ -61,6 +61,9 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::delete('/usuarios/{user}', [AdminController::class, 'destroyUser'])->name('users.destroy');
         Route::get('/configuracion', [SettingsController::class, 'index'])->name('settings.index');
         Route::put('/configuracion', [SettingsController::class, 'update'])->name('settings.update');
+        Route::post('/configuracion/restablecer-fabrica', [SettingsController::class, 'factoryReset'])->name('settings.factory-reset');
+        Route::get('/configuracion/backup/exportar', [SettingsController::class, 'exportBackup'])->name('settings.backup.export');
+        Route::post('/configuracion/backup/importar', [SettingsController::class, 'importBackup'])->name('settings.backup.import');
     });
 
     // Auditoría
@@ -84,6 +87,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::get('/productos/importar/plantilla', [ProductController::class, 'downloadImportTemplate'])->name('products.import-template');
         Route::post('/productos/gemini-autofill', [ProductController::class, 'geminiAutofill'])->name('products.gemini-autofill');
         Route::post('/productos/guardar-gemini-key', [ProductController::class, 'saveGeminiKey'])->name('products.save-gemini-key');
+        Route::post('/productos/acciones-masivas', [ProductController::class, 'bulkAction'])->name('products.bulk-action');
         Route::post('/productos/importar', [ProductController::class, 'import'])->name('products.import');
         Route::get('/productos/crear', [ProductController::class, 'create'])->name('products.create');
         Route::post('/productos', [ProductController::class, 'store'])->name('products.store');

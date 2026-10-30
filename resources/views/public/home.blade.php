@@ -36,7 +36,7 @@
                     <a href="{{ route('catalogo') }}" class="inline-flex items-center gap-2 rounded-full bg-emerald-500 px-7 py-3.5 text-xs font-black text-slate-950 shadow-xl shadow-emerald-500/25 transition hover:bg-emerald-400">
                         Explorar Catálogo Completo <span>→</span>
                     </a>
-                    <a href="https://wa.me/51987654321?text=Hola%20Portatiles%20Peru,%20deseo%20asesoria%20para%20elegir%20una%20laptop" target="_blank" class="inline-flex items-center gap-2 rounded-full border border-white/80 bg-black/20 px-6 py-3.5 text-xs font-bold text-white transition hover:bg-white hover:text-black">
+                    <a href="{{ \App\Models\Setting::getWhatsappUrl('Hola Portatiles Peru, deseo asesoria para elegir una laptop') }}" target="_blank" class="inline-flex items-center gap-2 rounded-full border border-white/80 bg-black/20 px-6 py-3.5 text-xs font-bold text-white transition hover:bg-white hover:text-black">
                         ◉ Consultar por WhatsApp
                     </a>
                 </div>

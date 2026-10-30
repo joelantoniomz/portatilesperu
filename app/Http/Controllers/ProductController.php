@@ -8,8 +8,12 @@ use App\Http\Requests\UpdateProductRequest;
 use App\Models\AuditLog;
 use App\Models\Brand;
 use App\Models\Category;
+use App\Models\InventoryBalance;
+use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\ProductImage;
+use App\Models\StockMovement;
+use App\Models\StockReservation;
 use App\Services\GeminiService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -225,6 +229,82 @@ class ProductController extends Controller
 
         return redirect()->route('admin.products.index')
             ->with('status', "El producto [{$sku}] ha sido archivado. Ya no será visible en el catálogo público.");
+    }
+
+    /**
+     * Realiza acciones masivas sobre los productos seleccionados (eliminar definitivamente o archivar).
+     */
+    public function bulkAction(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'action' => 'required|in:delete,archive,publish',
+            'product_ids' => 'nullable|array',
+            'product_ids.*' => 'integer|exists:products,id',
+            'select_all_pages' => 'nullable',
+        ]);
+
+        $action = $request->input('action');
+        $selectAll = filter_var($request->input('select_all_pages'), FILTER_VALIDATE_BOOLEAN);
+
+        if ($selectAll) {
+            $productIds = Product::query()->pluck('id')->all();
+        } else {
+            $productIds = $request->input('product_ids', []);
+        }
+
+        if (empty($productIds)) {
+            return back()->with('error', 'No se ha seleccionado ningún producto para procesar.');
+        }
+
+        $count = count($productIds);
+
+        if ($action === 'delete') {
+            DB::transaction(function () use ($productIds): void {
+                StockMovement::whereIn('product_id', $productIds)->delete();
+                InventoryBalance::whereIn('product_id', $productIds)->delete();
+                StockReservation::whereIn('product_id', $productIds)->delete();
+                OrderItem::whereIn('product_id', $productIds)->delete();
+
+                $images = ProductImage::whereIn('product_id', $productIds)->get();
+                foreach ($images as $img) {
+                    if ($img->file_path && ! str_starts_with($img->file_path, 'http')) {
+                        Storage::disk('public')->delete($img->file_path);
+                    }
+                    $img->delete();
+                }
+
+                Product::whereIn('id', $productIds)->delete();
+            });
+
+            AuditLog::log('products_bulk_deleted', 'products', null, null, [
+                'count' => $count,
+                'action' => 'delete',
+            ]);
+
+            return redirect()->route('admin.products.index')
+                ->with('status', "Se han eliminado definitivamente {$count} productos del catálogo.");
+        }
+
+        if ($action === 'archive') {
+            Product::whereIn('id', $productIds)->update(['status' => 'archived']);
+
+            AuditLog::log('products_bulk_archived', 'products', null, null, [
+                'count' => $count,
+                'action' => 'archive',
+            ]);
+
+            return redirect()->route('admin.products.index')
+                ->with('status', "Se han archivado {$count} productos del catálogo.");
+        }
+
+        if ($action === 'publish') {
+            Product::whereIn('id', $productIds)->update(['status' => 'published']);
+
+            return redirect()->route('admin.products.index')
+                ->with('status', "Se han publicado {$count} productos en el catálogo.");
+        }
+
+        return back();
     }
 
     /**

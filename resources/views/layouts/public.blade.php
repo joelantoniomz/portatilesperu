@@ -200,7 +200,7 @@
                 <span class="flex items-center gap-2"><span class="grid h-5 w-5 place-items-center rounded-full bg-emerald-500 text-[11px]">✓</span>Compra segura por WhatsApp</span>
             </div>
             <div class="flex items-center gap-6">
-                <a href="https://wa.me/51987654321?text=Hola%20Portatiles%20Peru" target="_blank" class="hidden items-center gap-2 text-white transition hover:text-emerald-300 sm:flex"><span class="text-base text-emerald-400">●</span>Contáctanos por WhatsApp <span>›</span></a>
+                <a href="{{ \App\Models\Setting::getWhatsappUrl('Hola Portatiles Peru') }}" target="_blank" class="hidden items-center gap-2 text-white transition hover:text-emerald-300 sm:flex"><span class="text-base text-emerald-400">●</span>Contáctanos por WhatsApp <span>›</span></a>
                 <span class="hidden h-5 w-px bg-white/20 sm:block"></span>
                 @auth
                     <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-2 text-white hover:text-emerald-300">♟ Mi cuenta⌄</a>
@@ -376,7 +376,7 @@
     <!-- Botón Flotante de WhatsApp para Consulta Rápida -->
     <aside aria-label="Contacto WhatsApp" class="fixed bottom-6 right-6 z-50">
         <a
-            href="https://wa.me/51987654321?text=Hola%20Portatiles%20Peru,%20deseo%20consultar%20por%20una%20laptop"
+            href="{{ \App\Models\Setting::getWhatsappUrl('Hola Portatiles Peru, deseo consultar por una laptop') }}"
             target="_blank"
             class="group flex items-center gap-3 px-4 py-3 rounded-full bg-emerald-500 hover:bg-emerald-400 text-forest-950 font-black text-xs shadow-2xl shadow-emerald-500/40 hover:scale-105 transition-all"
         >

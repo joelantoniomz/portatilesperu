@@ -263,7 +263,17 @@
                             <span class="text-xl font-black text-emerald-600">{{ $product->formatted_price }}</span>
                         </div>
 
-                        <a href="https://wa.me/51987654321?text=Hola%20Portatiles%20Peru,%20deseo%20consultar%20por%20{{ urlencode($product->name) }}" target="_blank" class="block rounded-lg bg-emerald-500 px-3 py-2.5 text-center text-xs font-black text-slate-950 transition hover:bg-emerald-400">◉ &nbsp;Comprar por WhatsApp</a>
+                        @php
+                            $cardWaNumber = \App\Models\Setting::getWhatsappNumber();
+                            $cardPdfUrl = route('catalogo.ficha-tecnica', $product->slug);
+                            $cardWaText = "¡Hola! 💻 Deseo comprar esta laptop:\n"
+                                        . "📌 *Producto:* {$product->name}\n"
+                                        . "🏷️ *SKU:* {$product->sku}\n"
+                                        . "💰 *Precio:* {$product->formatted_price}\n"
+                                        . "📄 *Ficha Técnica PDF:* {$cardPdfUrl}";
+                            $cardWaUrl = "https://wa.me/{$cardWaNumber}?text=" . urlencode($cardWaText);
+                        @endphp
+                        <a href="{{ $cardWaUrl }}" target="_blank" onclick="window.open('{{ $cardPdfUrl }}', '_blank')" class="block rounded-lg bg-emerald-500 px-3 py-2.5 text-center text-xs font-black text-slate-950 transition hover:bg-emerald-400">◉ &nbsp;Comprar por WhatsApp</a>
                         <form action="{{ route('carrito.agregar') }}" method="POST">
                             @csrf
                             <input type="hidden" name="product_id" value="{{ $product->id }}">

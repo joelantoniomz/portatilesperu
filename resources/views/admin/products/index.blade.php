@@ -131,11 +131,32 @@
 
     <!-- Listado de Productos -->
     <div class="card-surface p-6 border border-slate-100 space-y-4">
+
+        <!-- Banner de Selección de Todo el Catálogo -->
+        <div id="selectAllCatalogBanner" class="hidden p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-900 flex items-center justify-between">
+            <div>
+                <span>Has seleccionado los <strong id="pageSelectedCount">0</strong> productos de esta página.</span>
+                <button type="button" id="btnSelectEntireCatalog" onclick="selectEntireCatalog()" class="font-extrabold underline text-emerald-800 ml-2 hover:text-emerald-950">
+                    Seleccionar todos los {{ $products->total() }} productos del catálogo completo
+                </button>
+            </div>
+            <button type="button" onclick="clearSelection()" class="text-xs text-emerald-700 hover:text-emerald-900 font-bold underline">
+                Deseleccionar
+            </button>
+        </div>
+
         <div class="overflow-x-auto custom-scrollbar">
             <table class="w-full text-left text-xs text-slate-600">
                 <thead class="bg-slate-50 uppercase text-[10px] font-extrabold text-slate-400">
                     <tr>
+                        @if(auth()->user()->hasPermission('catalog.manage'))
+                        <th class="px-3 py-3 rounded-l-xl w-10 text-center">
+                            <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAllPage(this)" title="Seleccionar todos los de esta página" class="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 border-slate-300 cursor-pointer">
+                        </th>
+                        <th class="px-4 py-3">Producto</th>
+                        @else
                         <th class="px-4 py-3 rounded-l-xl">Producto</th>
+                        @endif
                         <th class="px-4 py-3">SKU / Códigos</th>
                         <th class="px-4 py-3">Categoría & Marca</th>
                         <th class="px-4 py-3">Precio</th>
@@ -145,7 +166,12 @@
                 </thead>
                 <tbody class="divide-y divide-slate-100">
                     @forelse($products as $product)
-                    <tr class="hover:bg-slate-50/60 transition-colors">
+                    <tr class="hover:bg-slate-50/60 transition-colors" id="row-product-{{ $product->id }}">
+                        @if(auth()->user()->hasPermission('catalog.manage'))
+                        <td class="px-3 py-3.5 text-center">
+                            <input type="checkbox" value="{{ $product->id }}" onchange="handleItemCheck()" class="product-item-checkbox w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 border-slate-300 cursor-pointer">
+                        </td>
+                        @endif
                         <!-- Producto con Miniatura -->
                         <td class="px-4 py-3.5">
                             <div class="flex items-center gap-3">
@@ -305,5 +331,206 @@
         </div>
     </div>
 
+    <!-- Barra Flotante de Acciones Masivas -->
+    <div id="bulkActionBar" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-slate-900/95 backdrop-blur-md text-white px-6 py-3.5 rounded-2xl shadow-2xl border border-slate-700/80 flex items-center gap-4 transition-all">
+        <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span class="text-xs font-bold text-white"><span id="selectedCountText">0</span> seleccionados</span>
+        </div>
+        <div class="h-4 w-px bg-slate-700"></div>
+        <button type="button" onclick="openBulkConfirmModal('delete')" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs transition-colors flex items-center gap-1.5 shadow-md">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+            <span>Eliminar definitivamente</span>
+        </button>
+        <button type="button" onclick="openBulkConfirmModal('archive')" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs transition-colors">
+            <span>Archivar</span>
+        </button>
+        <button type="button" onclick="clearSelection()" class="text-xs text-slate-400 hover:text-white underline ml-1">
+            Cancelar
+        </button>
+    </div>
+
+    <!-- Modal de Confirmación de Acción Masiva -->
+    <div id="modalBulkConfirm" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+        <div class="card-surface p-6 sm:p-8 max-w-md w-full border border-slate-100 shadow-2xl space-y-4">
+            <div class="flex items-center gap-3">
+                <div id="bulkModalIcon" class="w-10 h-10 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center flex-shrink-0">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 id="bulkModalTitle" class="font-extrabold text-slate-900 text-base">Eliminar productos seleccionados</h3>
+                    <p id="bulkModalSubtitle" class="text-xs text-slate-500 mt-0.5"></p>
+                </div>
+            </div>
+
+            <div id="bulkDeleteWarning" class="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs leading-relaxed">
+                <strong>⚠️ Advertencia:</strong> Esta acción eliminará los productos, sus imágenes y balances de stock. Esta operación no se puede deshacer.
+            </div>
+
+            <form id="bulkActionForm" action="{{ route('admin.products.bulk-action') }}" method="POST">
+                @csrf
+                <input type="hidden" name="action" id="bulkActionInput" value="delete">
+                <input type="hidden" name="select_all_pages" id="bulkSelectAllPagesInput" value="0">
+                <div id="bulkSelectedInputsContainer"></div>
+
+                <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+                    <button type="button" onclick="closeBulkConfirmModal()" class="px-4 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-bold text-xs hover:bg-slate-200">
+                        Cancelar
+                    </button>
+                    <button type="submit" id="bulkSubmitBtn" class="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-md transition-all">
+                        Confirmar y Eliminar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
 </div>
+
+<script>
+    let isEntireCatalogSelected = false;
+    const totalCatalogCount = {{ $products->total() }};
+
+    function toggleSelectAllPage(masterCheckbox) {
+        const checkboxes = document.querySelectorAll('.product-item-checkbox');
+        checkboxes.forEach(cb => {
+            cb.checked = masterCheckbox.checked;
+            highlightRow(cb);
+        });
+        isEntireCatalogSelected = false;
+        updateBulkUI();
+    }
+
+    function handleItemCheck() {
+        const checkboxes = document.querySelectorAll('.product-item-checkbox');
+        const checkedCount = document.querySelectorAll('.product-item-checkbox:checked').length;
+        const master = document.getElementById('selectAllCheckbox');
+        
+        if (master) {
+            master.checked = (checkedCount === checkboxes.length && checkboxes.length > 0);
+        }
+        
+        checkboxes.forEach(cb => highlightRow(cb));
+        isEntireCatalogSelected = false;
+        updateBulkUI();
+    }
+
+    function highlightRow(checkbox) {
+        const row = document.getElementById(`row-product-${checkbox.value}`);
+        if (!row) return;
+        if (checkbox.checked) {
+            row.classList.add('bg-emerald-50/50');
+        } else {
+            row.classList.remove('bg-emerald-50/50');
+        }
+    }
+
+    function updateBulkUI() {
+        const checkedItems = document.querySelectorAll('.product-item-checkbox:checked');
+        const count = checkedItems.length;
+        const bar = document.getElementById('bulkActionBar');
+        const banner = document.getElementById('selectAllCatalogBanner');
+        const counterText = document.getElementById('selectedCountText');
+        const pageCountText = document.getElementById('pageSelectedCount');
+
+        if (count > 0) {
+            bar.classList.remove('hidden');
+            counterText.textContent = isEntireCatalogSelected ? `Todos (${totalCatalogCount})` : count;
+
+            if (count === document.querySelectorAll('.product-item-checkbox').length && totalCatalogCount > count) {
+                banner.classList.remove('hidden');
+                pageCountText.textContent = count;
+            } else {
+                banner.classList.add('hidden');
+            }
+        } else {
+            bar.classList.add('hidden');
+            banner.classList.add('hidden');
+            const master = document.getElementById('selectAllCheckbox');
+            if (master) master.checked = false;
+        }
+    }
+
+    function selectEntireCatalog() {
+        isEntireCatalogSelected = true;
+        document.getElementById('selectedCountText').textContent = `Todos (${totalCatalogCount})`;
+        document.getElementById('selectAllCatalogBanner').innerHTML = `
+            <div class="text-xs font-bold text-emerald-950">
+                ✓ Se han seleccionado los <strong>${totalCatalogCount}</strong> productos del catálogo completo.
+            </div>
+            <button type="button" onclick="clearSelection()" class="text-xs text-emerald-700 hover:text-emerald-900 font-bold underline">
+                Deseleccionar
+            </button>
+        `;
+    }
+
+    function clearSelection() {
+        isEntireCatalogSelected = false;
+        const checkboxes = document.querySelectorAll('.product-item-checkbox');
+        checkboxes.forEach(cb => {
+            cb.checked = false;
+            highlightRow(cb);
+        });
+        const master = document.getElementById('selectAllCheckbox');
+        if (master) master.checked = false;
+        updateBulkUI();
+    }
+
+    function openBulkConfirmModal(action) {
+        const checkedItems = document.querySelectorAll('.product-item-checkbox:checked');
+        const count = isEntireCatalogSelected ? totalCatalogCount : checkedItems.length;
+        
+        if (count === 0) {
+            alert('Por favor seleccione al menos un producto.');
+            return;
+        }
+
+        const modal = document.getElementById('modalBulkConfirm');
+        const title = document.getElementById('bulkModalTitle');
+        const subtitle = document.getElementById('bulkModalSubtitle');
+        const warning = document.getElementById('bulkDeleteWarning');
+        const submitBtn = document.getElementById('bulkSubmitBtn');
+        const actionInput = document.getElementById('bulkActionInput');
+        const selectAllInput = document.getElementById('bulkSelectAllPagesInput');
+        const container = document.getElementById('bulkSelectedInputsContainer');
+
+        actionInput.value = action;
+        selectAllInput.value = isEntireCatalogSelected ? '1' : '0';
+        container.innerHTML = '';
+
+        if (!isEntireCatalogSelected) {
+            checkedItems.forEach(cb => {
+                const hidden = document.createElement('input');
+                hidden.type = 'hidden';
+                hidden.name = 'product_ids[]';
+                hidden.value = cb.value;
+                container.appendChild(hidden);
+            });
+        }
+
+        if (action === 'delete') {
+            title.textContent = isEntireCatalogSelected ? '¿Eliminar TODO el catálogo de productos?' : `¿Eliminar ${count} productos seleccionados?`;
+            subtitle.textContent = isEntireCatalogSelected ? `Se eliminarán permanentemente los ${totalCatalogCount} productos registrados.` : `Se borrarán los ${count} productos seleccionados de la base de datos.`;
+            warning.classList.remove('hidden');
+            submitBtn.className = 'px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-md transition-all';
+            submitBtn.textContent = 'Sí, Eliminar Definitivamente';
+        } else {
+            title.textContent = isEntireCatalogSelected ? '¿Archivar todos los productos?' : `¿Archivar ${count} productos?`;
+            subtitle.textContent = 'Los productos archivados ya no aparecerán en el catálogo público.';
+            warning.classList.add('hidden');
+            submitBtn.className = 'px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs shadow-md transition-all';
+            submitBtn.textContent = 'Archivar Productos';
+        }
+
+        modal.classList.remove('hidden');
+    }
+
+    function closeBulkConfirmModal() {
+        document.getElementById('modalBulkConfirm').classList.add('hidden');
+    }
+</script>
 @endsection
