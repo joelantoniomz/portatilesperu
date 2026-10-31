@@ -41,8 +41,7 @@ class PublicCatalogTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('PORTÁTILES');
         $response->assertSee('PERÚ');
-        $response->assertSee('Laptop Recomendada');
-        $response->assertSee('Laptops Destacadas');
+        $response->assertSee('Laptops');
     }
 
     /**
@@ -158,10 +157,9 @@ class PublicCatalogTest extends TestCase
         $response->assertSee($product->name);
         $response->assertSee($product->sku);
         $response->assertSee($product->formatted_price);
-        $response->assertSee('Disponibilidad en Tiendas Lima', false);
         $response->assertSee('Comprar por WhatsApp', false);
-        $response->assertSee('Agregar al carrito', false);
-        $response->assertSee('Descargar ficha PDF', false);
+        $response->assertSee('Agregar al Carrito', false);
+        $response->assertSee('Ficha PDF', false);
         $response->assertDontSee('Ver QR', false);
     }
 

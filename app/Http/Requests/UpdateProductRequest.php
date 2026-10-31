@@ -38,10 +38,10 @@ class UpdateProductRequest extends FormRequest
             'dimensions' => ['nullable', 'string', 'max:100'],
             'min_stock_alert' => ['nullable', 'integer', 'min:0'],
             'technical_specs' => ['nullable', 'array'],
-            'images' => ['nullable', 'array', 'max:8'],
-            'images.*' => ['image', 'mimes:jpeg,png,jpg,webp', 'max:4096'],
-            'image_urls' => ['nullable', 'array', 'max:8'],
-            'image_urls.*' => ['nullable', 'url', 'max:2048'],
+            'images' => ['nullable', 'array'],
+            'images.*' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp,gif', 'max:8192'],
+            'image_urls' => ['nullable', 'array'],
+            'image_urls.*' => ['nullable', 'string', 'max:2048'],
         ];
     }
 

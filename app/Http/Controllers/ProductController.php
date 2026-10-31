@@ -628,23 +628,33 @@ class ProductController extends Controller
     {
         $currentCount = $product->images()->count();
 
-        foreach ($request->file('images', []) as $file) {
-            if ($currentCount >= 8) {
-                break;
-            }
+        // 1. Guardar archivos locales subidos
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $file) {
+                if (! $file || ! $file->isValid()) {
+                    continue;
+                }
+                if ($currentCount >= 15) {
+                    break;
+                }
 
-            $path = $file->store("products/{$product->id}", 'public');
-            ProductImage::create([
-                'product_id' => $product->id,
-                'file_path' => $path,
-                'is_primary' => $currentCount === 0,
-                'sort_order' => $currentCount,
-                'alt_text' => $product->name,
-            ]);
-            $currentCount++;
+                $path = $file->store("products/{$product->id}", 'public');
+                ProductImage::create([
+                    'product_id' => $product->id,
+                    'file_path' => $path,
+                    'is_primary' => $currentCount === 0,
+                    'sort_order' => $currentCount,
+                    'alt_text' => $product->name,
+                ]);
+                $currentCount++;
+            }
         }
 
-        $this->storeImageUrls($product, $request->input('image_urls', []), $currentCount);
+        // 2. Guardar URLs agregadas
+        $urls = $request->input('image_urls', []);
+        if (is_array($urls)) {
+            $this->storeImageUrls($product, $urls, $currentCount);
+        }
     }
 
     private function storeImageUrls(Product $product, array $urls, ?int $currentCount = null): void
@@ -652,13 +662,22 @@ class ProductController extends Controller
         $currentCount ??= $product->images()->count();
 
         foreach (array_filter($urls) as $url) {
-            if ($currentCount >= 8) {
+            $cleanUrl = trim((string) $url);
+            if (empty($cleanUrl)) {
+                continue;
+            }
+            if ($currentCount >= 15) {
                 break;
+            }
+
+            // Evitar duplicar la misma URL para este producto
+            if ($product->images()->where('file_path', $cleanUrl)->exists()) {
+                continue;
             }
 
             ProductImage::create([
                 'product_id' => $product->id,
-                'file_path' => $url,
+                'file_path' => $cleanUrl,
                 'is_primary' => $currentCount === 0,
                 'sort_order' => $currentCount,
                 'alt_text' => $product->name,

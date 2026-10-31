@@ -13,6 +13,52 @@
     </div>
 </dialog>
 
+<!-- Modal: Pegar texto libre para extraer ficha con Gemini AI -->
+<dialog id="gemini-paste-modal" class="w-full max-w-xl rounded-3xl border border-slate-200 p-0 shadow-2xl backdrop:bg-slate-950/60">
+    <div class="p-6 sm:p-7 space-y-4">
+        <div class="flex items-start justify-between gap-4">
+            <div class="flex items-center gap-2.5">
+                <span class="w-9 h-9 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 text-slate-950 flex items-center justify-center font-black text-base shadow-md">✨</span>
+                <div>
+                    <h3 class="text-base font-black text-slate-900">Extraer Ficha con Gemini AI</h3>
+                    <p class="text-xs text-slate-400">Pega texto libre, ficha de fabricante, cotización o características técnicas.</p>
+                </div>
+            </div>
+            <button type="button" id="btn-close-paste-modal" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 font-bold text-sm flex items-center justify-center transition-colors">&times;</button>
+        </div>
+
+        <div class="space-y-3">
+            <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">Pegar Texto o Especificaciones del Producto</label>
+                <textarea 
+                    id="gemini-paste-textarea" 
+                    rows="7" 
+                    placeholder="Pega aquí cualquier información del producto, por ejemplo:&#10;&#10;JBL Tune 520BT Auriculares inalámbricos morados con sonido JBL Pure Bass, Bluetooth 5.3, hasta 57 horas de batería y carga rápida, llamadas manos libres con Voice Aware, ligeros y plegables..." 
+                    class="w-full rounded-2xl border border-slate-200 p-3.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all font-mono leading-relaxed"
+                ></textarea>
+                <span class="text-[11px] text-slate-400 mt-1 block">Gemini detectará y rellenará CPU, RAM, pantalla, conectividad, peso, dimensiones y descripciones en la ficha.</span>
+            </div>
+
+            <div class="flex items-center justify-between pt-2 border-t border-slate-100">
+                <button type="button" id="btn-clear-specs-action" class="px-3.5 py-2 rounded-xl text-rose-600 hover:bg-rose-50 font-bold text-xs transition-colors flex items-center gap-1">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    <span>Limpiar Campos</span>
+                </button>
+                <div class="flex items-center gap-2">
+                    <button type="button" id="btn-cancel-paste-modal" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors">
+                        Cancelar
+                    </button>
+                    <button type="button" id="btn-submit-paste-extract" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-black text-xs shadow-md transition-all flex items-center gap-2">
+                        <span>✨ Procesar y Aplicar Ficha</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</dialog>
+
 <!-- Modal: Configuración de API Key de Gemini AI -->
 <dialog id="gemini-key-modal" class="w-full max-w-md rounded-3xl border border-slate-200 p-0 shadow-2xl backdrop:bg-slate-950/60">
     <div class="p-6 space-y-4">
@@ -451,12 +497,60 @@
 
         btnGenerate?.addEventListener('click', () => executeGeminiGeneration());
 
-        // Botones contextuales por sección
+        // ──────────────────────────────────────────────────────────────────────────
+        // 5. MODAL PARA PEGAR TEXTO LIBRE Y EXTRAER FICHA CON GEMINI
+        // ──────────────────────────────────────────────────────────────────────────
+        const pasteModal = document.getElementById('gemini-paste-modal');
+        const btnClosePasteModal = document.getElementById('btn-close-paste-modal');
+        const btnCancelPasteModal = document.getElementById('btn-cancel-paste-modal');
+        const btnSubmitPasteExtract = document.getElementById('btn-submit-paste-extract');
+        const pasteTextarea = document.getElementById('gemini-paste-textarea');
+        const btnClearSpecs = document.getElementById('btn-clear-specs-action');
+
+        let currentModalSection = null;
+
+        const openPasteModal = (section) => {
+            currentModalSection = section;
+            // Pre-llenar con el nombre o prompt si el textarea está vacío
+            if (pasteTextarea && !pasteTextarea.value.trim()) {
+                const currentName = document.querySelector('input[name="name"]')?.value || promptInput?.value || '';
+                if (currentName) {
+                    pasteTextarea.value = currentName;
+                }
+            }
+            pasteModal?.showModal();
+            pasteTextarea?.focus();
+        };
+
+        btnClosePasteModal?.addEventListener('click', () => pasteModal?.close());
+        btnCancelPasteModal?.addEventListener('click', () => pasteModal?.close());
+
+        btnClearSpecs?.addEventListener('click', () => {
+            if (confirm('¿Desea limpiar todos los campos de especificaciones técnicas?')) {
+                const specInputs = document.querySelectorAll('input[name^="technical_specs"], #additional-specifications input');
+                specInputs.forEach(i => i.value = '');
+                const addContainer = document.getElementById('additional-specifications');
+                if (addContainer) addContainer.innerHTML = '';
+            }
+        });
+
+        btnSubmitPasteExtract?.addEventListener('click', async () => {
+            const textToProcess = pasteTextarea?.value.trim();
+            if (!textToProcess) {
+                alert('Por favor pega texto o especificaciones para procesar.');
+                pasteTextarea?.focus();
+                return;
+            }
+
+            pasteModal?.close();
+            await executeGeminiGeneration(textToProcess, currentModalSection);
+        });
+
+        // Botones contextuales por sección: abren el modal interactivo para pegar texto libre
         document.querySelectorAll('[data-gemini-section]').forEach((btn) => {
             btn.addEventListener('click', () => {
                 const section = btn.dataset.geminiSection;
-                const nameVal = document.querySelector('input[name="name"]')?.value || promptInput?.value;
-                executeGeminiGeneration(nameVal, section);
+                openPasteModal(section);
             });
         });
 
