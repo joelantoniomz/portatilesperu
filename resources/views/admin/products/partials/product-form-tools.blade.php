@@ -465,9 +465,12 @@
                     };
 
                     Object.entries(specMap).forEach(([key, selector]) => {
-                        if (specs[key]) {
-                            const el = document.querySelector(selector);
-                            if (el) { el.value = specs[key]; highlightField(el); }
+                        const el = document.querySelector(selector);
+                        if (el) {
+                            el.value = specs[key] ? specs[key] : '';
+                            if (specs[key]) {
+                                highlightField(el);
+                            }
                         }
                     });
 

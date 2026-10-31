@@ -74,16 +74,48 @@ class GeminiService
 
         $prompt = $this->buildPrompt($input, $categories, $brands);
 
-        $candidateModels = [
-            config('services.gemini.model', 'gemini-2.5-flash'),
+        // 1. Intentar descubrir dinámicamente los modelos disponibles para esta API Key
+        $availableModels = [];
+        try {
+            $listResponse = Http::withoutVerifying()
+                ->timeout(10)
+                ->withHeaders([
+                    'x-goog-api-key' => $apiKey,
+                ])
+                ->get("https://generativelanguage.googleapis.com/v1beta/models?key={$apiKey}");
+
+            if ($listResponse->successful()) {
+                $modelsData = $listResponse->json('models') ?? [];
+                foreach ($modelsData as $m) {
+                    $methods = $m['supportedGenerationMethods'] ?? [];
+                    if (in_array('generateContent', $methods, true)) {
+                        // Limpiar 'models/' prefix
+                        $modelName = str_replace('models/', '', $m['name'] ?? '');
+                        if (! empty($modelName)) {
+                            $availableModels[] = $modelName;
+                        }
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            // Ignorar y continuar con candidatos estáticos
+        }
+
+        // 2. Armar lista priorizada de modelos
+        $preferredConfig = config('services.gemini.model');
+        $staticCandidates = [
+            $preferredConfig,
             'gemini-2.5-flash',
             'gemini-2.0-flash',
-            'gemini-1.5-flash-latest',
-            'gemini-1.5-pro-latest',
+            'gemini-2.0-flash-001',
+            'gemini-2.5-flash-lite',
+            'gemini-1.5-flash',
+            'gemini-1.5-flash-8b',
+            'gemini-1.5-pro',
         ];
 
-        // Eliminar duplicados manteniendo orden
-        $candidateModels = array_unique(array_filter($candidateModels));
+        // Unir los descubiertos de la API con los candidatos estáticos
+        $candidateModels = array_unique(array_filter(array_merge($availableModels, $staticCandidates)));
 
         $lastError = 'Error desconocido en Gemini';
 
@@ -95,6 +127,7 @@ class GeminiService
                     ->timeout(25)
                     ->withHeaders([
                         'Content-Type' => 'application/json',
+                        'x-goog-api-key' => $apiKey,
                     ])
                     ->post($endpoint, [
                         'contents' => [
@@ -141,8 +174,10 @@ class GeminiService
                     continue;
                 }
 
-                // Si fue error de cuota o clave inválida (400, 403), salir al fallback
-                break;
+                // Si fue error de cuota o clave inválida (400, 403), continuar si hay más candidatos o salir
+                if ($response->status() === 429) {
+                    continue; // Intentar otro modelo en caso de cuota por modelo
+                }
 
             } catch (\Throwable $e) {
                 $lastError = $e->getMessage();
@@ -161,31 +196,27 @@ class GeminiService
         $brandsList = implode(', ', $brands);
 
         return <<<PROMPT
-Eres un experto catalogador técnico de laptops comerciales y gaming para Portátiles Perú (tienda especializada en Lima, Perú).
-Analiza el siguiente texto de entrada sobre un producto (puede ser el nombre comercial, un código de modelo o una lista de especificaciones técnicas desordenadas):
+Eres un experto catalogador técnico de tecnología y laptops para Portátiles Perú (tienda especializada en Lima, Perú).
+Analiza el siguiente texto de entrada sobre un producto (puede ser una laptop, auriculares/audífonos, monitor, accesorios u otro equipo de tecnología):
 
 """
 {$input}
 """
 
-Debes generar una ficha completa y profesional en formato JSON estricto con las siguientes claves:
-1. "name": Nombre comercial completo y bien estructurado (Ej: "Lenovo Legion Pro 5 16IRX9 Intel Core i7-14700HX 32GB RAM 1TB SSD RTX 4060 16\" WQXGA 240Hz").
-2. "sku": Código SKU conciso, limpio y en mayúsculas (Ej: "LEN-LEG-PRO5-4060" o "ASUS-ROG-G16-4070").
+Debes generar una ficha en formato JSON estricto con las siguientes claves:
+1. "name": Nombre comercial completo y bien estructurado (Ej: "Audífonos Inalámbricos JBL Tune 520BT Morado On-Ear con Bluetooth 5.3" o "Lenovo Legion Pro 5 16IRX9 Intel Core i7 32GB").
+2. "sku": Código SKU conciso, limpio y en mayúsculas (Ej: "JBL-T520BT-PUR" o "LEN-LEG-PRO5").
 3. "suggested_category": Elige la categoría más adecuada exclusivamente de esta lista existente: [{$categoriesList}].
 4. "suggested_brand": Elige la marca más adecuada exclusivamente de esta lista existente: [{$brandsList}].
-5. "short_description": Resumen comercial atractivo y conciso de 1 a 2 oraciones para compartir por WhatsApp y catálogos rápidos.
-6. "description": Presentación comercial detallada en 2 o 3 párrafos, destacando pantalla, capacidad para gaming o trabajo pesado, sistema de refrigeración y calidad de construcción en soles peruanos.
-7. "technical_specs": Objeto con los siguientes campos técnicos precisos:
-   - "procesador": Modelo de CPU, núcleos y frecuencia turbo máxima (Ej: "Intel Core i7-14700HX (20 núcleos, hasta 5.5GHz)").
-   - "ram": Capacidad, tipo y velocidad (Ej: "32 GB DDR5 5600MHz").
-   - "almacenamiento": Capacidad, factor de forma y bus (Ej: "1 TB SSD M.2 PCIe 4.0 NVMe").
-   - "pantalla": Tamaño, resolución, panel, tasa de refresco y brillo (Ej: "16\" WQXGA (2560x1600) IPS 240Hz 500 nits, 100% sRGB").
-   - "grafica": Modelo de GPU y VRAM dedicada (Ej: "NVIDIA GeForce RTX 4060 8GB GDDR6 (140W TGP)").
-   - "sistema_operativo": "Windows 11 Home" o "Windows 11 Pro".
-   - "conectividad": Puertos principales (Ej: "Wi-Fi 6E, Bluetooth 5.3, Thunderbolt 4 / USB4, HDMI 2.1, RJ-45 Gigabit").
-   - "garantia": Texto de garantía (Ej: "12 meses de garantía oficial en Perú").
-8. "weight": Peso numérico aproximado en kg (Ej: 2.35).
-9. "dimensions": Dimensiones aproximadas en formato "Largo x Ancho x Grosor cm" (Ej: "36.3 x 26.0 x 2.2 cm").
+5. "short_description": Resumen comercial conciso de 1 a 2 oraciones para compartir por WhatsApp y catálogo.
+6. "description": Presentación comercial detallada en 2 o 3 párrafos destacando características, calidad de sonido o potencia, batería y uso recomendado.
+7. "technical_specs": Objeto con especificaciones técnicas reales del producto analizado.
+   IMPORTANTE: Si el producto NO es una computadora/laptop (por ejemplo si son audífonos, mouse, mochila, etc.):
+   - Deja en blanco ("") los campos que NO apliquen como "procesador", "ram", "almacenamiento", "pantalla", "grafica", "sistema_operativo". ¡NO inventes procesador ni RAM si son audífonos!
+   - Rellena con precisión los campos que SÍ apliquen, como "conectividad" (ej: "Bluetooth 5.3, USB-C, Conexión multipunto"), "garantia" (ej: "12 meses de garantía oficial").
+   - Si es una laptop, rellena todos los campos técnicos habituales (procesador, ram, almacenamiento, pantalla, grafica, sistema_operativo, conectividad, garantia).
+8. "weight": Peso numérico aproximado en kg (ej: 0.16 para audífonos, 2.3 para laptop).
+9. "dimensions": Dimensiones aproximadas en formato "Largo x Ancho x Grosor cm" si se conocen, o cadena vacía "".
 
 Responde ÚNICAMENTE el objeto JSON sin texto antes ni después.
 PROMPT;
@@ -260,8 +291,11 @@ PROMPT;
 
         $name = trim($input);
         if (empty($name)) {
-            $name = 'Laptop Corporativa / Gamer de Alto Rendimiento';
+            $name = 'Producto de Tecnología y Cómputo';
         }
+
+        // Detección de si es accesorio o producto que NO es laptop (audífonos, mouse, etc.)
+        $isAudioOrAccessory = (bool) preg_match('/(aud[ií]fono|auricular|headphone|earphone|headset|parlante|speaker|mouse|teclado|funda|mochila|cable|cargador|adaptador)/i', $input);
 
         // Detección de marca
         $detectedBrandId = null;
@@ -274,46 +308,72 @@ PROMPT;
             }
         }
 
-        // Detección de procesador
-        $cpu = 'Intel Core i7 / AMD Ryzen 7';
-        if (preg_match('/(i[3579][\-\s]?\d{4,5}[A-Z]{0,2}|Ryzen[\s\d][\-\s]?\d{4}[A-Z]{0,2}|Apple\sM[1234][\s\w]*|Ultra\s\d[\s\w]*)/i', $input, $m)) {
-            $cpu = trim($m[0]);
+        // Detección de procesador (solo si no es accesorio)
+        $cpu = '';
+        if (! $isAudioOrAccessory) {
+            if (preg_match('/(i[3579][\-\s]?\d{4,5}[A-Z]{0,2}|Ryzen[\s\d][\-\s]?\d{4}[A-Z]{0,2}|Apple\sM[1234][\s\w]*|Ultra\s\d[\s\w]*)/i', $input, $m)) {
+                $cpu = trim($m[0]);
+            }
         }
 
-        // Detección de RAM
-        $ram = '16 GB DDR5';
-        if (preg_match('/(\d{1,3}\s?GB(\s?DDR[45])?(\s?\d{4}MHz)?)/i', $input, $m)) {
-            $ram = trim($m[0]);
+        // Detección de RAM (solo si no es accesorio)
+        $ram = '';
+        if (! $isAudioOrAccessory) {
+            if (preg_match('/(\d{1,3}\s?GB(\s?DDR[45])?(\s?\d{4}MHz)?)/i', $input, $m)) {
+                $ram = trim($m[0]);
+            }
         }
 
-        // Detección de Almacenamiento
-        $storage = '1 TB SSD M.2 NVMe';
-        if (preg_match('/(\d{1,2}\s?TB|\d{3,4}\s?GB)\s?(SSD|NVMe|PCIe)?/i', $input, $m)) {
-            $storage = trim($m[0]);
+        // Detección de Almacenamiento (solo si no es accesorio)
+        $storage = '';
+        if (! $isAudioOrAccessory) {
+            if (preg_match('/(\d{1,2}\s?TB|\d{3,4}\s?GB)\s?(SSD|NVMe|PCIe)?/i', $input, $m)) {
+                $storage = trim($m[0]);
+            }
         }
 
-        // Detección de Gráfica
-        $gpu = 'NVIDIA GeForce RTX';
-        if (preg_match('/(RTX\s?\d{4}[A-Z]{0,3}|GeForce\sRTX\s?\d{4}|Radeon\s[\w\d]+|Intel\sIris\sXe|Apple\sGPU)/i', $input, $m)) {
-            $gpu = 'NVIDIA GeForce '.trim($m[0]);
+        // Detección de Gráfica (solo si no es accesorio)
+        $gpu = '';
+        if (! $isAudioOrAccessory) {
+            if (preg_match('/(RTX\s?\d{4}[A-Z]{0,3}|GeForce\sRTX\s?\d{4}|Radeon\s[\w\d]+|Intel\sIris\sXe|Apple\sGPU)/i', $input, $m)) {
+                $gpu = 'NVIDIA GeForce '.trim($m[0]);
+            }
         }
 
-        // Detección de Pantalla
-        $display = '15.6" Full HD (1920x1080) IPS 144Hz';
-        if (preg_match('/(\d{2}(\.\d)?["\']?)\s?(WQXGA|QHD|FHD|OLED|IPS|4K|240Hz|165Hz|144Hz)?/i', $input, $m)) {
-            $display = trim($m[0]);
+        // Detección de Pantalla (solo si no es accesorio)
+        $display = '';
+        if (! $isAudioOrAccessory) {
+            if (preg_match('/(\d{2}(\.\d)?["\']?)\s?(WQXGA|QHD|FHD|OLED|IPS|4K|240Hz|165Hz|144Hz)?/i', $input, $m)) {
+                $display = trim($m[0]);
+            }
+        }
+
+        // Detección de Sistema Operativo
+        $os = $isAudioOrAccessory ? '' : 'Windows 11 Home';
+
+        // Detección de Conectividad
+        $connectivity = 'Bluetooth, USB-C';
+        if (preg_match('/(Bluetooth[\s\d\.]*|Wi-Fi[\s\d\w\.]*|USB-C|Jack\s3\.5mm|Inal[aá]mbrico)/i', $input, $m)) {
+            $connectivity = trim($m[0]);
         }
 
         // Detección de categoría sugerida
         $suggestedCategoryId = null;
-        if (stripos($input, 'gamer') !== false || stripos($input, 'rtx') !== false || stripos($input, 'legion') !== false || stripos($input, 'rog') !== false) {
+        if ($isAudioOrAccessory) {
+            foreach ($categories as $catId => $catName) {
+                if (stripos($catName, 'accesorio') !== false || stripos($catName, 'audio') !== false || stripos($catName, 'perif') !== false) {
+                    $suggestedCategoryId = $catId;
+                    break;
+                }
+            }
+        } elseif (stripos($input, 'gamer') !== false || stripos($input, 'rtx') !== false || stripos($input, 'legion') !== false || stripos($input, 'rog') !== false) {
             $suggestedCategoryId = array_search('Laptops Gamer', $categories) ?: null;
         } elseif (stripos($input, 'thinkpad') !== false || stripos($input, 'corporativa') !== false || stripos($input, 'latitude') !== false) {
             $suggestedCategoryId = array_search('Laptops Corporativas y Trabajo', $categories) ?: null;
         }
 
         $cleanSku = $this->ensureUniqueSku(
-            ($detectedBrandName ? substr($detectedBrandName, 0, 3) : 'LAP').'-'.strtoupper(Str::slug(substr($name, 0, 18)))
+            ($detectedBrandName ? substr($detectedBrandName, 0, 3) : 'PROD').'-'.strtoupper(Str::slug(substr($name, 0, 18)))
         );
 
         return [
@@ -323,20 +383,20 @@ PROMPT;
             'category_id' => $suggestedCategoryId,
             'suggested_brand' => $detectedBrandName,
             'brand_id' => $detectedBrandId,
-            'short_description' => "Potente equipo {$name} optimizado para alta productividad y desempeño en Perú.",
-            'description' => "La nueva {$name} integra componentes de vanguardia para brindar una experiencia de usuario fluida, diseño ergonómico y máxima fiabilidad tanto para profesionales como para usuarios avanzados.",
+            'short_description' => "Excelente equipo {$name} de alto rendimiento y garantía en Perú.",
+            'description' => "El modelo {$name} destaca por sus especificaciones equilibradas, gran autonomía y excelente acabado para satisfacer las máximas exigencias de los usuarios en Perú.",
             'technical_specs' => [
                 'procesador' => $cpu,
                 'ram' => $ram,
                 'almacenamiento' => $storage,
                 'pantalla' => $display,
                 'grafica' => $gpu,
-                'sistema_operativo' => 'Windows 11 Home',
-                'conectividad' => 'Wi-Fi 6, Bluetooth 5.2, USB-C, HDMI',
+                'sistema_operativo' => $os,
+                'conectividad' => $connectivity,
                 'garantia' => '12 meses de garantía oficial en Perú',
             ],
-            'weight' => 2.10,
-            'dimensions' => '35.9 x 25.1 x 2.1 cm',
+            'weight' => $isAudioOrAccessory ? 0.22 : 2.10,
+            'dimensions' => '',
             'source' => 'local_fallback',
             'warning' => $warningNotice,
         ];
