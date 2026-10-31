@@ -57,6 +57,21 @@ class SettingsController extends Controller
             'company_logo_file' => ['nullable', 'image', 'mimes:png,jpg,jpeg,svg,webp', 'max:2048'],
             'whatsapp_number' => ['nullable', 'string', 'max:30'],
             'theme_color' => ['required', 'in:emerald,blue,violet'],
+            // Configuración dinámica de OpenWA
+            'openwa_base_url' => ['nullable', 'string', 'max:255'],
+            'openwa_api_key' => ['nullable', 'string', 'max:255'],
+            'openwa_session_id' => ['nullable', 'string', 'max:100'],
+            'openwa_webhook_secret' => ['nullable', 'string', 'max:255'],
+            // Banners editables del Home
+            'home_hero_title' => ['nullable', 'string', 'max:200'],
+            'home_hero_subtitle' => ['nullable', 'string', 'max:500'],
+            'home_hero_badge' => ['nullable', 'string', 'max:100'],
+            'home_hero_image' => ['nullable', 'string', 'max:2048'],
+            'home_slide2_title' => ['nullable', 'string', 'max:200'],
+            'home_slide2_subtitle' => ['nullable', 'string', 'max:500'],
+            'home_slide2_badge' => ['nullable', 'string', 'max:100'],
+            'home_bento_corp_title' => ['nullable', 'string', 'max:150'],
+            'home_bento_corp_desc' => ['nullable', 'string', 'max:300'],
         ]);
 
         if ($request->hasFile('company_logo_file')) {
@@ -67,7 +82,7 @@ class SettingsController extends Controller
         unset($data['company_logo_file']);
 
         foreach ($data as $key => $value) {
-            Setting::query()->updateOrCreate(['key' => $key], ['value' => $value]);
+            Setting::query()->updateOrCreate(['key' => $key], ['value' => $value ?? '']);
         }
 
         AuditLog::log('settings_updated', 'settings', null, null, [

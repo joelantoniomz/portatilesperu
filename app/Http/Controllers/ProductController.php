@@ -506,12 +506,61 @@ class ProductController extends Controller
             }
 
             $sku = trim((string) ($row['sku'] ?? ''));
-            $category = $categories->get(Str::lower(trim((string) ($row['category'] ?? ''))));
-            $brand = $brands->get(Str::lower(trim((string) ($row['brand'] ?? ''))));
-            $status = trim((string) ($row['status'] ?? ''));
+            $catName = trim((string) ($row['category'] ?? ''));
+            $category = $categories->get(Str::lower($catName));
 
-            if ($sku === '' || blank($row['name'] ?? null) || ! is_numeric($row['price'] ?? null) || ! in_array($row['currency'] ?? null, ['PEN', 'USD'], true) || ! $category || ! $brand || ! in_array($status, ['draft', 'published', 'archived'], true)) {
-                throw ValidationException::withMessages(['products_file' => "La fila {$rowNumber} tiene datos obligatorios inválidos. Revise SKU, precio, moneda, categoría, marca y estado."]);
+            // Si la categoría no existe en la BD, la creamos automáticamente para no trabar la importación
+            if (! $category && $catName !== '') {
+                $createdCat = Category::firstOrCreate(
+                    ['slug' => Str::slug($catName)],
+                    ['name' => $catName, 'is_active' => true]
+                );
+                $categories->put(Str::lower($catName), $createdCat);
+                $category = $createdCat;
+            }
+
+            $brandName = trim((string) ($row['brand'] ?? ''));
+            $brand = $brands->get(Str::lower($brandName));
+
+            // Si la marca no existe en la BD, la creamos automáticamente
+            if (! $brand && $brandName !== '') {
+                $createdBrand = Brand::firstOrCreate(
+                    ['slug' => Str::slug($brandName)],
+                    ['name' => $brandName, 'is_active' => true]
+                );
+                $brands->put(Str::lower($brandName), $createdBrand);
+                $brand = $createdBrand;
+            }
+
+            // Normalizar moneda (por defecto PEN)
+            $currency = strtoupper(trim((string) ($row['currency'] ?? 'PEN')));
+            if (! in_array($currency, ['PEN', 'USD'], true)) {
+                $currency = 'PEN';
+            }
+
+            // Normalizar estado (por defecto published)
+            $rawStatus = Str::lower(trim((string) ($row['status'] ?? 'published')));
+            $status = match ($rawStatus) {
+                'publicado', 'published', 'activo', 'active' => 'published',
+                'borrador', 'draft', 'inactivo' => 'draft',
+                'archivado', 'archived' => 'archived',
+                default => 'published',
+            };
+
+            // Limpiar precio (quitar signos S/, $, comas o espacios)
+            $rawPrice = preg_replace('/[^0-9.]/', '', str_replace(',', '.', (string) ($row['price'] ?? '0')));
+            $price = is_numeric($rawPrice) ? (float) $rawPrice : null;
+
+            if ($sku === '' || blank($row['name'] ?? null) || $price === null || $price <= 0 || ! $category || ! $brand) {
+                $missingFields = [];
+                if ($sku === '') $missingFields[] = 'SKU vacío';
+                if (blank($row['name'] ?? null)) $missingFields[] = 'Nombre vacío';
+                if ($price === null || $price <= 0) $missingFields[] = 'Precio inválido ('.($row['price'] ?? 'vacío').')';
+                if (! $category) $missingFields[] = 'Categoría no especificada';
+                if (! $brand) $missingFields[] = 'Marca no especificada';
+
+                $detail = implode(', ', $missingFields);
+                throw ValidationException::withMessages(['products_file' => "La fila {$rowNumber} tiene datos inválidos: {$detail}."]);
             }
 
             if (isset($rows[$sku]) || Product::where('sku', $sku)->exists()) {
@@ -523,7 +572,15 @@ class ProductController extends Controller
                 throw ValidationException::withMessages(['products_file' => "El EAN {$barcode} de la fila {$rowNumber} ya pertenece a otro producto."]);
             }
 
-            $rows[$sku] = ['row' => $row, 'category' => $category, 'brand' => $brand, 'barcode' => $barcode];
+            $rows[$sku] = [
+                'row' => $row,
+                'category' => $category,
+                'brand' => $brand,
+                'barcode' => $barcode,
+                'price' => $price,
+                'currency' => $currency,
+                'status' => $status,
+            ];
         }
 
         fclose($file);
@@ -543,11 +600,11 @@ class ProductController extends Controller
                 $product = Product::create([
                     'sku' => trim($row['sku']),
                     'name' => trim($row['name']),
-                    'price' => $row['price'],
-                    'currency' => $row['currency'],
+                    'price' => $entry['price'],
+                    'currency' => $entry['currency'],
                     'category_id' => $entry['category']->id,
                     'brand_id' => $entry['brand']->id,
-                    'status' => $row['status'],
+                    'status' => $entry['status'],
                     'short_description' => ($row['short_description'] ?? null) ?: null,
                     'description' => ($row['description'] ?? null) ?: null,
                     'barcode' => $entry['barcode'] ?: null,

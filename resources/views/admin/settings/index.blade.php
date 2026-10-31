@@ -139,6 +139,171 @@
         </form>
     </div>
 
+    <!-- 1.1 Configuración de WhatsApp / OpenWA desde el Panel -->
+    <div class="card-surface p-6 sm:p-8 border border-slate-100 shadow-sm space-y-6">
+        <div class="flex items-center gap-2.5 pb-4 border-b border-slate-100">
+            <div class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold text-sm">
+                💬
+            </div>
+            <div>
+                <h3 class="font-extrabold text-slate-900 text-base">Conexión con OpenWA (WhatsApp Integrado)</h3>
+                <p class="text-xs text-slate-500">Configura la API de OpenWA para conectar el chat integrado sin depender únicamente de variables de entorno.</p>
+            </div>
+        </div>
+
+        <form action="{{ route('admin.settings.update') }}" method="POST" class="space-y-4">
+            @csrf
+            @method('PUT')
+            <input type="hidden" name="company_name" value="{{ $settings['company_name'] ?? 'Portátiles Perú' }}">
+            <input type="hidden" name="theme_color" value="{{ $settings['theme_color'] ?? 'emerald' }}">
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="openwa_base_url" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                        URL Base de OpenWA
+                    </label>
+                    <input 
+                        type="text" 
+                        id="openwa_base_url" 
+                        name="openwa_base_url" 
+                        value="{{ old('openwa_base_url', $settings['openwa_base_url'] ?? config('services.openwa.base_url', 'http://localhost:2785')) }}" 
+                        placeholder="http://localhost:2785 o https://tu-tunel.com" 
+                        class="w-full px-4 py-2 rounded-2xl border border-slate-200 bg-white text-slate-800 text-xs focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 font-mono"
+                    >
+                    <span class="text-[10px] text-slate-400 mt-1 block">URL donde está corriendo tu contenedor OpenWA.</span>
+                </div>
+
+                <div>
+                    <label for="openwa_session_id" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                        Nombre de la Sesión (Session ID)
+                    </label>
+                    <input 
+                        type="text" 
+                        id="openwa_session_id" 
+                        name="openwa_session_id" 
+                        value="{{ old('openwa_session_id', $settings['openwa_session_id'] ?? 'catalovirtual') }}" 
+                        placeholder="catalovirtual o default" 
+                        class="w-full px-4 py-2 rounded-2xl border border-slate-200 bg-white text-slate-800 text-xs focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 font-mono"
+                    >
+                    <span class="text-[10px] text-slate-400 mt-1 block">En tu panel de OpenWA tu sesión actual se llama <strong>catalovirtual</strong>.</span>
+                </div>
+
+                <div>
+                    <label for="openwa_api_key" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                        Clave API de OpenWA (API Key)
+                    </label>
+                    <input 
+                        type="password" 
+                        id="openwa_api_key" 
+                        name="openwa_api_key" 
+                        value="{{ old('openwa_api_key', $settings['openwa_api_key'] ?? '') }}" 
+                        placeholder="Copia la clave desde OpenWA > Claves API" 
+                        class="w-full px-4 py-2 rounded-2xl border border-slate-200 bg-white text-slate-800 text-xs focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 font-mono"
+                    >
+                </div>
+
+                <div>
+                    <label for="openwa_webhook_secret" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                        Secreto Webhook (HMAC Secret)
+                    </label>
+                    <input 
+                        type="text" 
+                        id="openwa_webhook_secret" 
+                        name="openwa_webhook_secret" 
+                        value="{{ old('openwa_webhook_secret', $settings['openwa_webhook_secret'] ?? '') }}" 
+                        placeholder="Secreto para validar firma de eventos" 
+                        class="w-full px-4 py-2 rounded-2xl border border-slate-200 bg-white text-slate-800 text-xs focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 font-mono"
+                    >
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between pt-2">
+                <span class="text-xs text-slate-500">
+                    Webhook en OpenWA: <code class="text-emerald-700 bg-slate-100 px-2 py-0.5 rounded font-mono">https://portatilesperu.onrender.com/webhook/whatsapp</code>
+                </span>
+                <button type="submit" class="px-5 py-2.5 rounded-2xl bg-[#0c3823] hover:bg-emerald-800 text-white font-bold text-xs shadow-md transition-all">
+                    Guardar Configuración OpenWA
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- 1.2 Editor de Textos y Banners del Home (Slider, Mega Deals y Empresas) -->
+    <div class="card-surface p-6 sm:p-8 border border-slate-100 shadow-sm space-y-6">
+        <div class="flex items-center gap-2.5 pb-4 border-b border-slate-100">
+            <div class="w-8 h-8 rounded-xl bg-violet-50 text-violet-700 flex items-center justify-center font-bold text-sm">
+                🖼️
+            </div>
+            <div>
+                <h3 class="font-extrabold text-slate-900 text-base">Personalización de Portada (Slider y Banners)</h3>
+                <p class="text-xs text-slate-500">Edita los textos y contenidos del carrusel principal, ofertas y secciones corporativas.</p>
+            </div>
+        </div>
+
+        <form action="{{ route('admin.settings.update') }}" method="POST" class="space-y-4">
+            @csrf
+            @method('PUT')
+            <input type="hidden" name="company_name" value="{{ $settings['company_name'] ?? 'Portátiles Perú' }}">
+            <input type="hidden" name="theme_color" value="{{ $settings['theme_color'] ?? 'emerald' }}">
+
+            <div class="space-y-4">
+                <h4 class="text-xs font-black text-slate-800 uppercase tracking-wider">Slide 1 del Carrusel Principal</h4>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">Insignia / Badge</label>
+                        <input type="text" name="home_hero_badge" value="{{ old('home_hero_badge', $settings['home_hero_badge'] ?? 'Nueva Generación 2026') }}" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">Título Principal</label>
+                        <input type="text" name="home_hero_title" value="{{ old('home_hero_title', $settings['home_hero_title'] ?? 'Future Technology Today.') }}" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">Imagen URL (Opcional)</label>
+                        <input type="url" name="home_hero_image" value="{{ old('home_hero_image', $settings['home_hero_image'] ?? '') }}" placeholder="https://..." class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1">Descripción / Subtítulo</label>
+                    <textarea name="home_hero_subtitle" rows="2" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs">{{ old('home_hero_subtitle', $settings['home_hero_subtitle'] ?? 'Descubre las laptops más avanzadas del mercado con procesadores Intel Core Ultra, AMD Ryzen 9000 y gráficos dedicados NVIDIA RTX 4000.') }}</textarea>
+                </div>
+
+                <h4 class="text-xs font-black text-slate-800 uppercase tracking-wider pt-2 border-t border-slate-100">Slide 2 del Carrusel (Ultrabooks / Creadores)</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">Título</label>
+                        <input type="text" name="home_slide2_title" value="{{ old('home_slide2_title', $settings['home_slide2_title'] ?? 'Ultra Ligeras. Máxima Autonomía.') }}" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">Badge</label>
+                        <input type="text" name="home_slide2_badge" value="{{ old('home_slide2_badge', $settings['home_slide2_badge'] ?? 'Especial Creadores & Diseño') }}" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1">Descripción</label>
+                    <textarea name="home_slide2_subtitle" rows="2" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs">{{ old('home_slide2_subtitle', $settings['home_slide2_subtitle'] ?? 'Pantallas OLED de alta fidelidad de color, chasis ultraligeros de aluminio aeroespacial y baterías de larga duración.') }}</textarea>
+                </div>
+
+                <h4 class="text-xs font-black text-slate-800 uppercase tracking-wider pt-2 border-t border-slate-100">Sección Corporativa / Empresas</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">Título Empresas</label>
+                        <input type="text" name="home_bento_corp_title" value="{{ old('home_bento_corp_title', $settings['home_bento_corp_title'] ?? 'Equipos Corporativos') }}" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">Descripción</label>
+                        <input type="text" name="home_bento_corp_desc" value="{{ old('home_bento_corp_desc', $settings['home_bento_corp_desc'] ?? 'ThinkPad, Dell Latitude y HP ProBook con Windows 11 Pro.') }}" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs">
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-3 border-t border-slate-100 flex justify-end">
+                <button type="submit" class="px-5 py-2.5 rounded-2xl bg-[#0c3823] hover:bg-emerald-800 text-white font-bold text-xs shadow-md transition-all">
+                    Guardar Textos de Portada
+                </button>
+            </div>
+        </form>
+    </div>
+
     <!-- 2. Copias de Seguridad (Exportar / Importar Backup) -->
     <div class="card-surface p-6 sm:p-8 border border-slate-100 shadow-sm space-y-6">
         <div class="flex items-center gap-2.5 pb-4 border-b border-slate-100">

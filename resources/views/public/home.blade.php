@@ -19,14 +19,13 @@
                     <div class="lg:col-span-7 space-y-6 z-10">
                         <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-500/20 border border-indigo-400/40 text-indigo-300 text-xs font-bold uppercase tracking-wider">
                             <span class="w-2 h-2 rounded-full bg-indigo-400 animate-pulse"></span>
-                            <span>Nueva Generación 2026</span>
+                            <span>{{ \App\Models\Setting::getValue('home_hero_badge', 'Nueva Generación 2026') }}</span>
                         </div>
                         <h1 class="text-4xl sm:text-6xl font-black heading-font tracking-tight text-white leading-tight">
-                            Future Technology <br>
-                            <span class="bg-gradient-to-r from-indigo-400 via-violet-300 to-emerald-400 bg-clip-text text-transparent">Today.</span>
+                            {{ \App\Models\Setting::getValue('home_hero_title', 'Future Technology Today.') }}
                         </h1>
                         <p class="text-slate-300 text-sm sm:text-base max-w-xl leading-relaxed">
-                            Descubre las laptops más avanzadas del mercado con procesadores Intel Core Ultra, AMD Ryzen 9000 y gráficos dedicados NVIDIA RTX 4000. Potencia pura para gaming y trabajo exigente.
+                            {{ \App\Models\Setting::getValue('home_hero_subtitle', 'Descubre las laptops más avanzadas del mercado con procesadores Intel Core Ultra, AMD Ryzen 9000 y gráficos dedicados NVIDIA RTX 4000. Potencia pura para gaming y trabajo exigente.') }}
                         </p>
                         <div class="flex flex-wrap items-center gap-4 pt-2">
                             <a href="{{ route('catalogo') }}" class="px-8 py-3.5 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-xs sm:text-sm shadow-xl shadow-indigo-600/30 transition-all hover:scale-105 flex items-center gap-2">
@@ -41,7 +40,10 @@
                     <div class="lg:col-span-5 flex justify-center z-10">
                         <div class="relative group">
                             <div class="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-violet-600 rounded-3xl blur opacity-30 group-hover:opacity-60 transition duration-500"></div>
-                            @if($featuredProducts->first())
+                            @php($customHeroImg = \App\Models\Setting::getValue('home_hero_image'))
+                            @if(!empty($customHeroImg))
+                                <img src="{{ $customHeroImg }}" alt="Laptop Principal" class="relative w-80 sm:w-96 rounded-2xl object-contain drop-shadow-2xl">
+                            @elseif($featuredProducts->first())
                                 <img src="{{ $featuredProducts->first()->primary_image_url }}" alt="Laptop Principal" class="relative w-80 sm:w-96 rounded-2xl object-contain drop-shadow-2xl">
                             @else
                                 <div class="w-80 h-64 bg-slate-800/80 rounded-2xl flex items-center justify-center text-4xl">💻</div>
@@ -54,14 +56,13 @@
                 <div class="hero-slide hidden w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-center p-8 sm:p-12 lg:p-16 transition-opacity duration-500">
                     <div class="lg:col-span-7 space-y-6 z-10">
                         <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-violet-500/20 border border-violet-400/40 text-violet-300 text-xs font-bold uppercase tracking-wider">
-                            <span>Especial Creadores & Diseño</span>
+                            <span>{{ \App\Models\Setting::getValue('home_slide2_badge', 'Especial Creadores & Diseño') }}</span>
                         </div>
                         <h2 class="text-4xl sm:text-6xl font-black heading-font tracking-tight text-white leading-tight">
-                            Ultra Ligeras. <br>
-                            <span class="bg-gradient-to-r from-violet-400 via-pink-400 to-amber-300 bg-clip-text text-transparent">Máxima Autonomía.</span>
+                            {{ \App\Models\Setting::getValue('home_slide2_title', 'Ultra Ligeras. Máxima Autonomía.') }}
                         </h2>
                         <p class="text-slate-300 text-sm sm:text-base max-w-xl leading-relaxed">
-                            Pantallas OLED de alta fidelidad de color, chasis ultraligeros de aluminio aeroespacial y baterías de hasta 18 horas para que lleves tu creatividad a cualquier lugar.
+                            {{ \App\Models\Setting::getValue('home_slide2_subtitle', 'Pantallas OLED de alta fidelidad de color, chasis ultraligeros de aluminio aeroespacial y baterías de hasta 18 horas para que lleves tu creatividad a cualquier lugar.') }}
                         </p>
                         <div class="flex flex-wrap items-center gap-4 pt-2">
                             <a href="{{ route('catalogo') }}" class="px-8 py-3.5 rounded-full bg-violet-600 hover:bg-violet-500 text-white font-extrabold text-xs sm:text-sm shadow-xl shadow-violet-600/30 transition-all hover:scale-105">
@@ -184,8 +185,12 @@
             <div class="md:col-span-3 rounded-[2rem] bg-gradient-to-br from-emerald-900 via-slate-900 to-slate-900 text-white p-7 sm:p-8 flex flex-col justify-between relative overflow-hidden shadow-lg border border-slate-800">
                 <div class="space-y-3 z-10">
                     <span class="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-black uppercase tracking-wider">Empresas</span>
-                    <h3 class="text-xl font-black heading-font text-white leading-tight">Equipos Corporativos</h3>
-                    <p class="text-xs text-slate-400">ThinkPad, Dell Latitude y HP ProBook con Windows 11 Pro.</p>
+                    <h3 class="text-xl font-black heading-font text-white leading-tight">
+                        {{ \App\Models\Setting::getValue('home_bento_corp_title', 'Equipos Corporativos') }}
+                    </h3>
+                    <p class="text-xs text-slate-400">
+                        {{ \App\Models\Setting::getValue('home_bento_corp_desc', 'ThinkPad, Dell Latitude y HP ProBook con Windows 11 Pro.') }}
+                    </p>
                 </div>
                 <div class="pt-6 z-10">
                     <a href="{{ route('catalogo') }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition-colors">
