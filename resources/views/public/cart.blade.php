@@ -323,20 +323,21 @@
                         >{{ old('notes') }}</textarea>
                     </div>
 
+                    @php($cartTotal = $total ?? $subtotal ?? 0)
                     <!-- Resumen Económico -->
                     <div class="pt-4 border-t border-slate-100 space-y-2">
                         <div class="flex items-center justify-between text-xs text-slate-500">
                             <span>Subtotal Estimado:</span>
-                            <span class="font-mono text-slate-800 font-bold">S/ {{ number_format($total, 2) }}</span>
+                            <span class="font-mono text-slate-800 font-bold">S/ {{ number_format($cartTotal, 2) }}</span>
                         </div>
                         <div class="flex items-center justify-between text-xs text-slate-500">
                             <span>IGV (18% Incluido):</span>
-                            <span class="font-mono text-slate-800 font-bold">S/ {{ number_format($total - ($total / 1.18), 2) }}</span>
+                            <span class="font-mono text-slate-800 font-bold">S/ {{ number_format($cartTotal - ($cartTotal / 1.18), 2) }}</span>
                         </div>
                         <div class="flex items-center justify-between text-base font-black text-slate-900 pt-2 border-t border-slate-200">
                             <span>Total a Coordinar:</span>
                             <span class="font-mono text-xl font-black text-slate-900 font-display">
-                                S/ {{ number_format($total, 2) }}
+                                S/ {{ number_format($cartTotal, 2) }}
                             </span>
                         </div>
                     </div>

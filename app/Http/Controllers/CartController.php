@@ -40,8 +40,9 @@ class CartController extends Controller
         }
 
         $warehouses = Warehouse::where('is_active', true)->orderBy('name')->get();
+        $total = $subtotal;
 
-        return view('public.cart', compact('items', 'subtotal', 'warehouses'));
+        return view('public.cart', compact('items', 'subtotal', 'total', 'warehouses'));
     }
 
     /**
