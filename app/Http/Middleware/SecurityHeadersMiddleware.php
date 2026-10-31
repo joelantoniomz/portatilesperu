@@ -24,8 +24,8 @@ class SecurityHeadersMiddleware
         // Control de información en cabecera Referer
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
 
-        // Control de características y sensores del navegador
-        $response->headers->set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+        // Control de características y sensores del navegador (Permitir cámara para el escáner QR de inventario)
+        $response->headers->set('Permissions-Policy', 'camera=(self), microphone=(), geolocation=()');
 
         // Forzar HTTPS estricto si está en producción
         if (app()->environment('production') || $request->isSecure()) {
