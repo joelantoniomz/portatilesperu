@@ -68,7 +68,8 @@
     </div>
 
     <!-- Banner Informativo de Modo Configuración (Si faltan credenciales) -->
-    @if(! $whatsappStatus['configured'])
+    @php($isFullyConfigured = (isset($openwaStatus) && $openwaStatus['connected']) || (isset($whatsappStatus) && $whatsappStatus['configured']))
+    @if(! $isFullyConfigured)
     <div class="card-surface rounded-2xl border border-amber-300/40 bg-gradient-to-r from-amber-50 to-orange-50 p-4 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-amber-900">
         <div class="flex items-start gap-3">
             <div class="p-2 bg-amber-500 text-white rounded-xl flex-shrink-0">
@@ -77,21 +78,18 @@
                 </svg>
             </div>
             <div>
-                <p class="font-black text-sm text-amber-950">Chat en Modo de Configuración</p>
+                <p class="font-black text-sm text-amber-950">Chat WhatsApp en Modo de Configuración</p>
                 <p class="text-amber-800 text-[11px] mt-0.5 leading-relaxed">
-                    Las credenciales oficiales de <strong>Meta WhatsApp Business Cloud API</strong> aún no están definidas en tu archivo <code>.env</code>.
-                    Actualmente puedes <strong>gestionar clientes, redactar y guardar notas internas privadas</strong>.
-                    Para activar el envío y recepción en vivo hacia teléfonos de clientes, completa las credenciales indicadas.
+                    Puedes responder y redactar mensajes. Para activar envíos automáticos directos por WhatsApp, ingresa la URL y API Key de tu OpenWA en <strong>Configuración</strong>.
                 </p>
             </div>
         </div>
-        <button
-            type="button"
-            onclick="document.getElementById('modalConfigInfo').classList.remove('hidden')"
+        <a
+            href="{{ route('admin.settings.index') }}"
             class="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs whitespace-nowrap shadow-xs transition-colors self-start sm:self-auto"
         >
-            Ver variables pendientes
-        </button>
+            Configurar OpenWA
+        </a>
     </div>
     @endif
 
@@ -428,12 +426,13 @@
                                 id="messageSendType"
                                 class="rounded-xl border border-slate-200 bg-slate-50 px-2 py-2 text-[11px] font-bold text-slate-700 focus:outline-none focus:ring-1 focus:ring-emerald-500"
                             >
-                                @if($whatsappStatus['configured'])
+                                @php($isOpenWaOrMetaReady = (isset($openwaStatus) && $openwaStatus['connected']) || (isset($whatsappStatus) && $whatsappStatus['configured']))
+                                @if($isOpenWaOrMetaReady)
                                     <option value="whatsapp" selected>📱 WhatsApp</option>
                                     <option value="note">🔒 Nota Interna</option>
                                 @else
-                                    <option value="note" selected>🔒 Nota Interna</option>
-                                    <option value="whatsapp">📱 WhatsApp (Requiere API)</option>
+                                    <option value="whatsapp" selected>📱 WhatsApp</option>
+                                    <option value="note">🔒 Nota Interna</option>
                                 @endif
                             </select>
                         </div>
