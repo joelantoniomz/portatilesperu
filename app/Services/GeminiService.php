@@ -74,60 +74,82 @@ class GeminiService
 
         $prompt = $this->buildPrompt($input, $categories, $brands);
 
-        $model = config('services.gemini.model', 'gemini-1.5-flash');
-        $endpoint = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}";
+        $candidateModels = [
+            config('services.gemini.model', 'gemini-2.5-flash'),
+            'gemini-2.5-flash',
+            'gemini-2.0-flash',
+            'gemini-1.5-flash-latest',
+            'gemini-1.5-pro-latest',
+        ];
 
-        try {
-            $response = Http::withoutVerifying()
-                ->timeout(25)
-                ->withHeaders([
-                    'Content-Type' => 'application/json',
-                ])
-                ->post($endpoint, [
-                    'contents' => [
-                        [
-                            'parts' => [
-                                ['text' => $prompt],
+        // Eliminar duplicados manteniendo orden
+        $candidateModels = array_unique(array_filter($candidateModels));
+
+        $lastError = 'Error desconocido en Gemini';
+
+        foreach ($candidateModels as $model) {
+            $endpoint = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}";
+
+            try {
+                $response = Http::withoutVerifying()
+                    ->timeout(25)
+                    ->withHeaders([
+                        'Content-Type' => 'application/json',
+                    ])
+                    ->post($endpoint, [
+                        'contents' => [
+                            [
+                                'parts' => [
+                                    ['text' => $prompt],
+                                ],
                             ],
                         ],
-                    ],
-                    'generationConfig' => [
-                        'responseMimeType' => 'application/json',
-                        'temperature' => 0.2,
-                    ],
-                ]);
+                        'generationConfig' => [
+                            'responseMimeType' => 'application/json',
+                            'temperature' => 0.2,
+                        ],
+                    ]);
 
-            if ($response->successful()) {
-                $body = $response->json();
-                $rawText = $body['candidates'][0]['content']['parts'][0]['text'] ?? '';
-                $cleanJson = $this->cleanJsonString($rawText);
-                $decoded = json_decode($cleanJson, true);
+                if ($response->successful()) {
+                    $body = $response->json();
+                    $rawText = $body['candidates'][0]['content']['parts'][0]['text'] ?? '';
+                    $cleanJson = $this->cleanJsonString($rawText);
+                    $decoded = json_decode($cleanJson, true);
 
-                if (is_array($decoded)) {
-                    $matchedCategoryId = $this->matchEntityId($decoded['suggested_category'] ?? '', $categories);
-                    $matchedBrandId = $this->matchEntityId($decoded['suggested_brand'] ?? '', $brands);
+                    if (is_array($decoded)) {
+                        $matchedCategoryId = $this->matchEntityId($decoded['suggested_category'] ?? '', $categories);
+                        $matchedBrandId = $this->matchEntityId($decoded['suggested_brand'] ?? '', $brands);
 
-                    $decoded['category_id'] = $matchedCategoryId;
-                    $decoded['brand_id'] = $matchedBrandId;
-                    $decoded['source'] = 'gemini';
-                    $decoded['model_used'] = $model;
+                        $decoded['category_id'] = $matchedCategoryId;
+                        $decoded['brand_id'] = $matchedBrandId;
+                        $decoded['source'] = 'gemini';
+                        $decoded['model_used'] = $model;
 
-                    // Asegurar SKU único si fue sugerido
-                    if (! empty($decoded['sku'])) {
-                        $decoded['sku'] = $this->ensureUniqueSku($decoded['sku']);
+                        // Asegurar SKU único si fue sugerido
+                        if (! empty($decoded['sku'])) {
+                            $decoded['sku'] = $this->ensureUniqueSku($decoded['sku']);
+                        }
+
+                        return $decoded;
                     }
-
-                    return $decoded;
                 }
+
+                $lastError = $response->json('error.message') ?? "Error HTTP {$response->status()} con modelo {$model}";
+
+                // Si el modelo específico no fue encontrado (404), continuar con el siguiente candidato
+                if ($response->status() === 404 || str_contains(strtolower($lastError), 'not found')) {
+                    continue;
+                }
+
+                // Si fue error de cuota o clave inválida (400, 403), salir al fallback
+                break;
+
+            } catch (\Throwable $e) {
+                $lastError = $e->getMessage();
             }
+        }
 
-            // Si la respuesta falló con error de cuota o clave inválida
-            $errorMsg = $response->json('error.message') ?? 'Error en la respuesta de Gemini AI (Código: '.$response->status().')';
-
-            return $this->fallbackLocalExtraction($input, $errorMsg);
-
-        } catch (\Throwable $e) {
-            return $this->fallbackLocalExtraction($input, 'Excepción de conexión con Gemini AI: '.$e->getMessage());
+        return $this->fallbackLocalExtraction($input, $lastError);
         }
     }
 

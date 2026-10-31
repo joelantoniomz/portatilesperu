@@ -246,48 +246,75 @@
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
                 @php $specs = $product->technical_specs ?? []; @endphp
-                <div>
-                    <label class="block font-bold text-slate-700 uppercase mb-1">Procesador (CPU)</label>
+                <div class="group relative">
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="block font-bold text-slate-700 uppercase">Procesador (CPU)</label>
+                        <button type="button" onclick="clearSpecInput(this)" title="Limpiar / Quitar" class="text-slate-400 hover:text-rose-500 font-bold px-1.5 py-0.5 rounded text-xs transition-colors">&times; Quitar</button>
+                    </div>
                     <input type="text" name="technical_specs[procesador]" value="{{ old('technical_specs.procesador', $specs['procesador'] ?? '') }}" class="w-full px-4 py-2.5 rounded-2xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
                 </div>
 
-                <div>
-                    <label class="block font-bold text-slate-700 uppercase mb-1">Memoria RAM</label>
+                <div class="group relative">
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="block font-bold text-slate-700 uppercase">Memoria RAM</label>
+                        <button type="button" onclick="clearSpecInput(this)" title="Limpiar / Quitar" class="text-slate-400 hover:text-rose-500 font-bold px-1.5 py-0.5 rounded text-xs transition-colors">&times; Quitar</button>
+                    </div>
                     <input type="text" name="technical_specs[ram]" value="{{ old('technical_specs.ram', $specs['ram'] ?? '') }}" class="w-full px-4 py-2.5 rounded-2xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
                 </div>
 
-                <div>
-                    <label class="block font-bold text-slate-700 uppercase mb-1">Almacenamiento (SSD)</label>
+                <div class="group relative">
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="block font-bold text-slate-700 uppercase">Almacenamiento (SSD)</label>
+                        <button type="button" onclick="clearSpecInput(this)" title="Limpiar / Quitar" class="text-slate-400 hover:text-rose-500 font-bold px-1.5 py-0.5 rounded text-xs transition-colors">&times; Quitar</button>
+                    </div>
                     <input type="text" name="technical_specs[almacenamiento]" value="{{ old('technical_specs.almacenamiento', $specs['almacenamiento'] ?? '') }}" class="w-full px-4 py-2.5 rounded-2xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
                 </div>
 
-                <div>
-                    <label class="block font-bold text-slate-700 uppercase mb-1">Pantalla</label>
+                <div class="group relative">
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="block font-bold text-slate-700 uppercase">Pantalla</label>
+                        <button type="button" onclick="clearSpecInput(this)" title="Limpiar / Quitar" class="text-slate-400 hover:text-rose-500 font-bold px-1.5 py-0.5 rounded text-xs transition-colors">&times; Quitar</button>
+                    </div>
                     <input type="text" name="technical_specs[pantalla]" value="{{ old('technical_specs.pantalla', $specs['pantalla'] ?? '') }}" class="w-full px-4 py-2.5 rounded-2xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
                 </div>
 
-                <div>
-                    <label class="block font-bold text-slate-700 uppercase mb-1">Tarjeta Gráfica (GPU)</label>
+                <div class="group relative">
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="block font-bold text-slate-700 uppercase">Tarjeta Gráfica (GPU)</label>
+                        <button type="button" onclick="clearSpecInput(this)" title="Limpiar / Quitar" class="text-slate-400 hover:text-rose-500 font-bold px-1.5 py-0.5 rounded text-xs transition-colors">&times; Quitar</button>
+                    </div>
                     <input type="text" name="technical_specs[grafica]" value="{{ old('technical_specs.grafica', $specs['grafica'] ?? '') }}" class="w-full px-4 py-2.5 rounded-2xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
                 </div>
 
-                <div>
-                    <label class="block font-bold text-slate-700 uppercase mb-1">Sistema Operativo</label>
+                <div class="group relative">
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="block font-bold text-slate-700 uppercase">Sistema Operativo</label>
+                        <button type="button" onclick="clearSpecInput(this)" title="Limpiar / Quitar" class="text-slate-400 hover:text-rose-500 font-bold px-1.5 py-0.5 rounded text-xs transition-colors">&times; Quitar</button>
+                    </div>
                     <input type="text" name="technical_specs[sistema_operativo]" value="{{ old('technical_specs.sistema_operativo', $specs['sistema_operativo'] ?? '') }}" class="w-full px-4 py-2.5 rounded-2xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
                 </div>
 
-                <div>
-                    <label class="block font-bold text-slate-700 uppercase mb-1">Conectividad / Puertos</label>
+                <div class="group relative">
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="block font-bold text-slate-700 uppercase">Conectividad / Puertos</label>
+                        <button type="button" onclick="clearSpecInput(this)" title="Limpiar / Quitar" class="text-slate-400 hover:text-rose-500 font-bold px-1.5 py-0.5 rounded text-xs transition-colors">&times; Quitar</button>
+                    </div>
                     <input type="text" name="technical_specs[conectividad]" value="{{ old('technical_specs.conectividad', $specs['conectividad'] ?? '') }}" class="w-full px-4 py-2.5 rounded-2xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
                 </div>
 
-                <div>
-                    <label class="block font-bold text-slate-700 uppercase mb-1">Garantía Oficial</label>
+                <div class="group relative">
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="block font-bold text-slate-700 uppercase">Garantía Oficial</label>
+                        <button type="button" onclick="clearSpecInput(this)" title="Limpiar / Quitar" class="text-slate-400 hover:text-rose-500 font-bold px-1.5 py-0.5 rounded text-xs transition-colors">&times; Quitar</button>
+                    </div>
                     <input type="text" name="technical_specs[garantia]" value="{{ old('technical_specs.garantia', $specs['garantia'] ?? '') }}" class="w-full px-4 py-2.5 rounded-2xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
                 </div>
 
-                <div>
-                    <label class="block font-bold text-slate-700 uppercase mb-1">Peso (kg) / Dimensiones</label>
+                <div class="group relative">
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="block font-bold text-slate-700 uppercase">Peso (kg) / Dimensiones</label>
+                        <button type="button" onclick="clearSpecInput(this)" title="Limpiar / Quitar" class="text-slate-400 hover:text-rose-500 font-bold px-1.5 py-0.5 rounded text-xs transition-colors">&times; Quitar</button>
+                    </div>
                     <div class="grid grid-cols-2 gap-2">
                         <input type="number" step="0.01" name="weight" value="{{ old('weight', $product->weight) }}" placeholder="kg" class="w-full px-3 py-2.5 rounded-2xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
                         <input type="text" name="dimensions" value="{{ old('dimensions', $product->dimensions) }}" placeholder="cm x cm x cm" class="w-full px-3 py-2.5 rounded-2xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">

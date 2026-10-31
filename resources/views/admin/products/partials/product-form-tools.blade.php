@@ -555,4 +555,20 @@
         });
 
     })();
+
+    // Función global para limpiar o vaciar un campo específico de ficha técnica
+    function clearSpecInput(btn) {
+        const container = btn.closest('.group');
+        if (container) {
+            const inputs = container.querySelectorAll('input');
+            inputs.forEach(input => {
+                input.value = '';
+                input.dispatchEvent(new Event('input', { bubbles: true }));
+                input.dispatchEvent(new Event('change', { bubbles: true }));
+            });
+            // Efecto visual sutil de confirmación
+            container.classList.add('opacity-40');
+            setTimeout(() => container.classList.remove('opacity-40'), 300);
+        }
+    }
 </script>
