@@ -18,15 +18,20 @@
                 <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
                     Centro de Atención WhatsApp
                 </span>
-                @if($whatsappStatus['configured'])
+                @if(isset($openwaStatus) && $openwaStatus['connected'])
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        OpenWA Sesión Activa ({{ $openwaStatus['phone'] ?? 'Conectado' }})
+                    </span>
+                @elseif(isset($whatsappStatus) && $whatsappStatus['configured'])
                     <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-300 border border-emerald-500/30">
                         <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                         Meta Cloud API Conectado
                     </span>
                 @else
-                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-400/30" title="Configura las credenciales en .env">
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-400/30" title="Configura OPENWA_BASE_URL y OPENWA_API_KEY">
                         <span class="w-2 h-2 rounded-full bg-amber-400"></span>
-                        Modo Configuración
+                        OpenWA / WhatsApp (Modo Configuración)
                     </span>
                 @endif
             </div>

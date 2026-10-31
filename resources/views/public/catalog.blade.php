@@ -1,61 +1,61 @@
 @extends('layouts.public')
 
-@section('title', 'Catálogo de Laptops en Lima, Perú - Portátiles Perú')
-@section('meta_description', 'Explora nuestro catálogo de laptops gaming, ultrabooks y estaciones de trabajo. Filtra por marca, categoría y especificaciones con stock disponible en Lima.')
+@section('title', 'Catálogo de Laptops en Lima, Perú — Portátiles Perú')
+@section('meta_description', 'Explora nuestro catálogo completo de laptops para ingeniería, gaming, oficina y diseño con entrega inmediata en Lima y envíos a todo el Perú.')
 
 @section('content')
-<div class="mx-auto max-w-[1440px] space-y-5 px-4 py-5 sm:px-6 lg:px-8">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
 
-    <!-- Encabezado de Sección -->
-    <div class="flex flex-col items-start justify-between gap-3 border-b border-slate-200 pb-4 sm:flex-row sm:items-center">
+    <!-- Header de Catálogo -->
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-200 pb-6">
         <div>
-            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold mb-2">
-                <span>Catálogo Oficial 2026</span>
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-50 text-violet-700 text-xs font-bold mb-2">
+                <span class="w-2 h-2 rounded-full bg-violet-600"></span>
+                <span>Catálogo Actualizado 2026</span>
             </div>
-            <h1 class="text-2xl font-black tracking-tight text-slate-950">Laptops Destacadas</h1>
-            <p class="mt-1 text-xs text-slate-500 sm:text-sm">
-                Mostrando {{ $products->total() }} laptops publicadas con garantía oficial y disponibilidad en sedes.
+            <h1 class="text-3xl font-black text-slate-900 tracking-tight font-display">Laptops & Estaciones de Trabajo</h1>
+            <p class="text-sm text-slate-500 mt-1">
+                Mostrando {{ $products->total() }} equipos certificados con garantía local y stock en Lima.
             </p>
         </div>
 
-        <!-- Selector de Ordenamiento -->
-        <form method="GET" action="{{ route('catalogo') }}" class="flex items-center gap-2">
+        <!-- Selector de ordenamiento -->
+        <form method="GET" action="{{ route('catalogo') }}" class="flex items-center gap-3">
             @foreach(request()->except(['orden', 'page']) as $key => $val)
                 <input type="hidden" name="{{ $key }}" value="{{ $val }}">
             @endforeach
-            <label for="ordenSelect" class="whitespace-nowrap text-xs font-semibold text-slate-500">Ordenar por:</label>
+            <label for="ordenSelect" class="text-xs font-bold text-slate-500 uppercase tracking-wider">Ordenar por:</label>
             <select
                 id="ordenSelect"
                 name="orden"
                 onchange="this.form.submit()"
-                class="cursor-pointer rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                class="px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
             >
                 <option value="novedades" {{ request('orden', 'novedades') === 'novedades' ? 'selected' : '' }}>Más recientes</option>
                 <option value="precio_bajo" {{ request('orden') === 'precio_bajo' ? 'selected' : '' }}>Precio: Menor a Mayor</option>
                 <option value="precio_alto" {{ request('orden') === 'precio_alto' ? 'selected' : '' }}>Precio: Mayor a Menor</option>
-                <option value="nombre_asc" {{ request('orden') === 'nombre_asc' ? 'selected' : '' }}>Nombre (A-Z)</option>
+                <option value="nombre_asc" {{ request('orden') === 'nombre_asc' ? 'selected' : '' }}>Nombre: A &rarr; Z</option>
             </select>
         </form>
     </div>
 
-    <!-- Layout en 2 Columnas: Filtros Laterales + Grid de Productos -->
-    <div class="grid grid-cols-1 items-start gap-5 lg:grid-cols-12">
+    <!-- Layout: Filtros + Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
         <!-- Sidebar de Filtros -->
-        <aside class="lg:col-span-2 xl:col-span-2">
-            <div class="glass-card space-y-5 rounded-2xl border border-slate-200 p-4">
+        <aside class="lg:col-span-3 space-y-6">
+            <div class="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm space-y-6">
                 <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                    <h2 class="flex items-center gap-2 text-sm font-bold tracking-wide text-slate-900">
-                        <svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                    <h2 class="text-sm font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                        <svg class="w-4 h-4 text-violet-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
                         </svg>
                         <span>Filtros</span>
                     </h2>
-
                     @if(request()->anyFilled(['q', 'categoria', 'marca', 'min_precio', 'max_precio', 'en_stock']))
-                    <a href="{{ route('catalogo') }}" class="text-[11px] font-bold text-emerald-400 hover:underline">
-                        Limpiar todo
-                    </a>
+                        <a href="{{ route('catalogo') }}" class="text-xs font-bold text-violet-600 hover:text-violet-700 hover:underline">
+                            Limpiar todo
+                        </a>
                     @endif
                 </div>
 
@@ -64,249 +64,272 @@
                         <input type="hidden" name="orden" value="{{ request('orden') }}">
                     @endif
 
-                    <!-- Búsqueda en texto -->
+                    <!-- Búsqueda rápida -->
                     <div>
-                        <label for="filterQueryInput" class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Búsqueda rápida</label>
-                        <input
-                            id="filterQueryInput"
-                            type="text"
-                            name="q"
-                            value="{{ request('q') }}"
-                            placeholder="Modelo, SKU, CPU..."
-                            class="w-full px-3.5 py-2 rounded-xl bg-forest-900 border border-emerald-500/20 text-white placeholder-slate-500 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-400"
-                        >
+                        <label for="filterQ" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Búsqueda rápida</label>
+                        <div class="relative">
+                            <input
+                                type="text"
+                                id="filterQ"
+                                name="q"
+                                value="{{ request('q') }}"
+                                placeholder="Modelo, CPU, SKU..."
+                                class="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:bg-white"
+                            >
+                            <svg class="w-4 h-4 text-slate-400 absolute left-3 top-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                        </div>
                     </div>
 
-                    <!-- Filtro por Categorías -->
+                    <!-- Categorías -->
                     <div>
-                        <span class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Categoría</span>
-                        <div class="space-y-1.5 text-xs">
-                            <a href="{{ route('catalogo', array_merge(request()->except(['categoria', 'page']))) }}" class="flex items-center justify-between py-1 px-2 rounded-lg transition-colors {{ !request('categoria') ? 'bg-emerald-500/20 text-emerald-300 font-bold' : 'text-slate-400 hover:text-white' }}">
+                        <span class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2.5">Categoría</span>
+                        <div class="space-y-1">
+                            <a href="{{ route('catalogo', request()->except(['categoria', 'page'])) }}" class="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-colors {{ !request('categoria') ? 'bg-violet-50 text-violet-700 font-bold' : 'text-slate-600 hover:bg-slate-50' }}">
                                 <span>Todas las categorías</span>
                             </a>
                             @foreach($categories as $cat)
-                            <a href="{{ route('catalogo', array_merge(request()->except(['page']), ['categoria' => $cat->slug])) }}" class="flex items-center justify-between py-1 px-2 rounded-lg transition-colors {{ request('categoria') === $cat->slug ? 'bg-emerald-500/20 text-emerald-300 font-bold' : 'text-slate-400 hover:text-white' }}">
-                                <span>{{ $cat->name }}</span>
-                                <span class="font-mono text-[10px] text-slate-500">({{ $cat->products_count }})</span>
-                            </a>
+                                <a href="{{ route('catalogo', array_merge(request()->except(['page']), ['categoria' => $cat->slug])) }}" class="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-colors {{ request('categoria') === $cat->slug ? 'bg-violet-50 text-violet-700 font-bold' : 'text-slate-600 hover:bg-slate-50' }}">
+                                    <span>{{ $cat->name }}</span>
+                                    <span class="text-[11px] font-mono text-slate-400">({{ $cat->products_count }})</span>
+                                </a>
                             @endforeach
                         </div>
                     </div>
 
-                    <!-- Filtro por Marcas -->
+                    <!-- Marcas -->
                     <div>
-                        <span class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Marca Oficial</span>
-                        <div class="space-y-1.5 text-xs max-h-48 overflow-y-auto pr-1">
-                            <a href="{{ route('catalogo', array_merge(request()->except(['marca', 'page']))) }}" class="flex items-center justify-between py-1 px-2 rounded-lg transition-colors {{ !request('marca') ? 'bg-emerald-500/20 text-emerald-300 font-bold' : 'text-slate-400 hover:text-white' }}">
+                        <span class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2.5">Marca Oficial</span>
+                        <div class="space-y-1 max-h-48 overflow-y-auto pr-1">
+                            <a href="{{ route('catalogo', request()->except(['marca', 'page'])) }}" class="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-colors {{ !request('marca') ? 'bg-violet-50 text-violet-700 font-bold' : 'text-slate-600 hover:bg-slate-50' }}">
                                 <span>Todas las marcas</span>
                             </a>
                             @foreach($brands as $b)
-                            <a href="{{ route('catalogo', array_merge(request()->except(['page']), ['marca' => $b->slug])) }}" class="flex items-center justify-between py-1 px-2 rounded-lg transition-colors {{ request('marca') === $b->slug ? 'bg-emerald-500/20 text-emerald-300 font-bold' : 'text-slate-400 hover:text-white' }}">
-                                <span>{{ $b->name }}</span>
-                                <span class="font-mono text-[10px] text-slate-500">({{ $b->products_count }})</span>
-                            </a>
+                                <a href="{{ route('catalogo', array_merge(request()->except(['page']), ['marca' => $b->slug])) }}" class="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-colors {{ request('marca') === $b->slug ? 'bg-violet-50 text-violet-700 font-bold' : 'text-slate-600 hover:bg-slate-50' }}">
+                                    <span>{{ $b->name }}</span>
+                                    <span class="text-[11px] font-mono text-slate-400">({{ $b->products_count }})</span>
+                                </a>
                             @endforeach
                         </div>
                     </div>
 
                     <!-- Rango de Precios -->
                     <div>
-                        <span class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Rango de Precio (S/)</span>
+                        <span class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Precio (S/)</span>
                         <div class="grid grid-cols-2 gap-2">
                             <input
                                 type="number"
                                 name="min_precio"
                                 value="{{ request('min_precio') }}"
                                 placeholder="Mínimo"
-                                class="w-full px-3 py-1.5 rounded-xl bg-forest-900 border border-emerald-500/20 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                                class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:bg-white"
                             >
                             <input
                                 type="number"
                                 name="max_precio"
                                 value="{{ request('max_precio') }}"
                                 placeholder="Máximo"
-                                class="w-full px-3 py-1.5 rounded-xl bg-forest-900 border border-emerald-500/20 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                                class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:bg-white"
                             >
                         </div>
                     </div>
 
-                    <!-- Toggle Solo en Stock -->
-                    <div class="pt-2 border-t border-emerald-950 flex items-center justify-between">
-                        <label for="enStockCheck" class="text-xs font-bold text-slate-300 cursor-pointer">
-                            Solo con Stock Disponible
-                        </label>
+                    <!-- Solo en Stock -->
+                    <div class="pt-2 border-t border-slate-100 flex items-center justify-between">
+                        <label for="catalogInStock" class="text-xs font-bold text-slate-700 cursor-pointer">Solo con stock</label>
                         <input
                             type="checkbox"
                             name="en_stock"
-                            id="enStockCheck"
+                            id="catalogInStock"
                             value="1"
                             {{ request('en_stock') ? 'checked' : '' }}
-                            class="w-4 h-4 rounded text-emerald-500 bg-forest-900 border-emerald-500/30 focus:ring-emerald-400"
+                            class="w-4 h-4 rounded text-violet-600 focus:ring-violet-500 border-slate-300"
                         >
                     </div>
 
-                    <button type="submit" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition-all">
+                    <button type="submit" class="w-full py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs uppercase tracking-wider transition-all shadow-sm">
                         Aplicar Filtros
                     </button>
                 </form>
             </div>
         </aside>
 
-        <!-- Grid de Laptops -->
-        <div class="space-y-5 lg:col-span-10 xl:col-span-10">
-
-            <section class="relative overflow-hidden rounded-2xl bg-[#03120d] px-6 py-6 text-white sm:px-9 sm:py-7">
-                <div class="absolute inset-0 bg-[radial-gradient(circle_at_62%_25%,rgba(34,197,94,0.42),transparent_28%)]"></div>
-                <div class="absolute -right-16 -top-24 h-72 w-72 rounded-full border border-emerald-400/20"></div>
-                <div class="relative grid items-center gap-5 md:grid-cols-[1fr_auto]">
-                    <div class="max-w-xl">
-                        <span class="inline-flex rounded-full bg-emerald-500 px-3 py-1 text-[10px] font-black tracking-wide text-slate-950">NUEVO</span>
-                        <h2 class="mt-3 text-3xl font-black leading-[1.05] sm:text-4xl">LAPTOPS<br>DE <span class="text-emerald-400">ALTO RENDIMIENTO</span></h2>
-                        <p class="mt-3 max-w-md text-sm text-slate-200">Potencia, velocidad y diseño en un solo equipo. Ideales para estudiar, trabajar o jugar.</p>
-                        <div class="mt-5 flex flex-wrap gap-x-6 gap-y-2 text-lg font-black text-white/90"><span>ASUS</span><span>Lenovo</span><span>HP</span><span>acer</span><span>Dell</span></div>
-                    </div>
-                    <div class="hidden min-w-44 space-y-3 border-l border-white/10 pl-6 text-xs sm:block">
-                        <p><span class="text-xl text-emerald-400">▣</span> <b class="ml-2">Procesadores</b><br><span class="ml-8 text-slate-300">Intel / AMD</span></p>
-                        <p><span class="text-xl text-emerald-400">▧</span> <b class="ml-2">Gráficos</b><br><span class="ml-8 text-slate-300">RTX / Radeon</span></p>
-                        <p><span class="text-xl text-emerald-400">♢</span> <b class="ml-2">Garantía</b><br><span class="ml-8 text-slate-300">1 año</span></p>
-                        <a href="{{ route('catalogo', ['categoria' => 'laptops']) }}" class="mt-2 block rounded-full bg-emerald-500 px-4 py-3 text-center font-bold text-slate-950 transition hover:bg-emerald-400">Ver todas las laptops&nbsp; →</a>
-                    </div>
-                </div>
-            </section>
+        <!-- Listado de Productos -->
+        <main class="lg:col-span-9 space-y-6">
 
             @if(request()->anyFilled(['q', 'categoria', 'marca', 'en_stock']))
-            <!-- Pills de filtros activos -->
-            <div class="flex flex-wrap items-center gap-2">
-                <span class="text-xs text-slate-400 font-semibold">Filtros aplicados:</span>
-                @if(request('q'))
-                    <span class="px-2.5 py-1 rounded-full text-xs bg-forest-800 border border-emerald-500/30 text-emerald-300">
-                        "{{ request('q') }}"
-                    </span>
-                @endif
-                @if(request('categoria'))
-                    <span class="px-2.5 py-1 rounded-full text-xs bg-forest-800 border border-emerald-500/30 text-emerald-300">
-                        Categoría: {{ request('categoria') }}
-                    </span>
-                @endif
-                @if(request('marca'))
-                    <span class="px-2.5 py-1 rounded-full text-xs bg-forest-800 border border-emerald-500/30 text-emerald-300">
-                        Marca: {{ request('marca') }}
-                    </span>
-                @endif
-                @if(request('en_stock'))
-                    <span class="px-2.5 py-1 rounded-full text-xs bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
-                        En Stock
-                    </span>
-                @endif
-            </div>
+                <div class="flex flex-wrap items-center gap-2">
+                    <span class="text-xs font-bold text-slate-400">Filtros activos:</span>
+                    @if(request('q'))
+                        <span class="px-3 py-1 rounded-full text-xs font-bold bg-violet-50 text-violet-700 border border-violet-200">
+                            "{{ request('q') }}"
+                        </span>
+                    @endif
+                    @if(request('categoria'))
+                        <span class="px-3 py-1 rounded-full text-xs font-bold bg-violet-50 text-violet-700 border border-violet-200">
+                            Categoría: {{ request('categoria') }}
+                        </span>
+                    @endif
+                    @if(request('marca'))
+                        <span class="px-3 py-1 rounded-full text-xs font-bold bg-violet-50 text-violet-700 border border-violet-200">
+                            Marca: {{ request('marca') }}
+                        </span>
+                    @endif
+                    @if(request('en_stock'))
+                        <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            Solo en Stock
+                        </span>
+                    @endif
+                </div>
             @endif
 
-            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 @forelse($products as $product)
-                <div class="glass-card group flex flex-col justify-between rounded-2xl border border-slate-100 p-3 transition-all hover:-translate-y-1 hover:border-emerald-400 hover:shadow-lg">
-                    <div class="space-y-3">
-                        <!-- Imagen -->
-                        <div class="relative aspect-[4/3] w-full overflow-hidden rounded-xl bg-slate-50">
-                            <img src="{{ $product->primary_image_url }}" alt="{{ $product->name }}" class="h-full w-full object-contain transition-transform duration-300 group-hover:scale-105">
+                    <div class="group bg-white rounded-2xl border border-slate-200/80 p-4 shadow-sm hover:shadow-xl hover:border-violet-300 transition-all duration-300 flex flex-col justify-between">
+                        <div>
+                            <!-- Imagen y Badges -->
+                            <div class="relative aspect-[4/3] rounded-xl overflow-hidden bg-slate-50 mb-3 flex items-center justify-center">
+                                <img
+                                    src="{{ $product->primary_image_url }}"
+                                    alt="{{ $product->name }}"
+                                    class="w-full h-full object-contain p-3 group-hover:scale-105 transition-transform duration-300"
+                                >
+                                <div class="absolute top-2.5 left-2.5 flex flex-wrap gap-1">
+                                    @if($product->is_new)
+                                        <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-violet-600 text-white shadow-sm">
+                                            Nuevo
+                                        </span>
+                                    @endif
+                                    @if($product->brand)
+                                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-900 text-white shadow-sm">
+                                            {{ $product->brand->name }}
+                                        </span>
+                                    @endif
+                                </div>
+                            </div>
 
-                            <div class="absolute top-2.5 left-2.5 flex flex-wrap gap-1">
-                                @if($product->is_new)
-                                    <span class="rounded-full bg-emerald-500 px-2 py-0.5 text-[9px] font-extrabold uppercase text-slate-950">Nuevo</span>
-                                @endif
-                                @if($product->brand)
-                                    <span class="rounded-full bg-slate-950 px-2 py-0.5 text-[9px] font-bold text-white">{{ $product->brand->name }}</span>
+                            <!-- SKU y Stock -->
+                            <div class="flex items-center justify-between text-[11px] mb-2">
+                                <span class="font-mono text-slate-400 font-semibold">{{ $product->sku }}</span>
+                                @if($product->total_available_stock > 3)
+                                    <span class="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-bold text-[10px]">
+                                        En Stock
+                                    </span>
+                                @elseif($product->total_available_stock > 0)
+                                    <span class="px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 font-bold text-[10px]">
+                                        Últimas {{ $product->total_available_stock }} u.
+                                    </span>
+                                @else
+                                    <span class="px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-700 font-bold text-[10px]">
+                                        Agotado
+                                    </span>
                                 @endif
                             </div>
-                        </div>
 
-                        <!-- SKU & Stock -->
-                        <div class="flex items-center justify-between text-[10px]">
-                            <span class="font-mono text-slate-400 font-semibold">{{ $product->sku }}</span>
-                            @if($product->total_available_stock > 3)
-                                <span class="px-2 py-0.5 rounded-full badge-stock-ok font-bold">En Stock</span>
-                            @elseif($product->total_available_stock > 0)
-                                <span class="px-2 py-0.5 rounded-full badge-stock-low font-bold">{{ $product->total_available_stock }} unidades</span>
-                            @else
-                                <span class="px-2 py-0.5 rounded-full badge-stock-out font-bold">Agotado</span>
+                            <!-- Título -->
+                            <h3 class="font-bold text-sm text-slate-900 leading-snug line-clamp-2 group-hover:text-violet-600 transition-colors">
+                                <a href="{{ route('catalogo.detalle', $product->slug) }}">
+                                    {{ $product->name }}
+                                </a>
+                            </h3>
+
+                            <!-- Specs Chips -->
+                            @if(!empty($product->technical_specs))
+                                <div class="flex flex-wrap gap-1 mt-2.5">
+                                    @if(!empty($product->technical_specs['procesador']))
+                                        <span class="px-2 py-0.5 rounded bg-slate-100 text-slate-700 text-[10px] font-mono">
+                                            {{ Str::limit($product->technical_specs['procesador'], 15) }}
+                                        </span>
+                                    @endif
+                                    @if(!empty($product->technical_specs['ram']))
+                                        <span class="px-2 py-0.5 rounded bg-slate-100 text-slate-700 text-[10px] font-mono">
+                                            {{ $product->technical_specs['ram'] }}
+                                        </span>
+                                    @endif
+                                    @if(!empty($product->technical_specs['almacenamiento']))
+                                        <span class="px-2 py-0.5 rounded bg-slate-100 text-slate-700 text-[10px] font-mono">
+                                            {{ $product->technical_specs['almacenamiento'] }}
+                                        </span>
+                                    @endif
+                                </div>
                             @endif
                         </div>
 
-                        <!-- Nombre Laptop -->
-                        <h3 class="line-clamp-2 text-sm font-black leading-tight text-slate-900 transition-colors group-hover:text-emerald-600">
-                            <a href="{{ route('catalogo.detalle', $product->slug) }}">
-                                {{ $product->name }}
-                            </a>
-                        </h3>
+                        <!-- Precio y Acciones -->
+                        <div class="mt-4 pt-3 border-t border-slate-100 space-y-2">
+                            <div class="flex items-baseline justify-between">
+                                <div>
+                                    <span class="text-[10px] text-slate-400 font-bold block uppercase">Precio</span>
+                                    <span class="text-xl font-black text-slate-900 font-display">
+                                        {{ $product->formatted_price }}
+                                    </span>
+                                </div>
+                                <a href="{{ route('catalogo.ficha-tecnica', $product->slug) }}" class="text-[11px] font-bold text-violet-600 hover:text-violet-700 hover:underline flex items-center gap-1">
+                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                    <span>PDF</span>
+                                </a>
+                            </div>
 
-                        <p class="line-clamp-2 text-[11px] leading-4 text-slate-500">{{ $product->short_description ?: 'Equipo seleccionado con garantía oficial de tienda y asesoría especializada.' }}</p>
+                            @php
+                                $cWaNumber = \App\Models\Setting::getWhatsappNumber();
+                                $cPdfUrl = route('catalogo.ficha-tecnica', $product->slug);
+                                $cWaText = "¡Hola! 💻 Deseo cotizar/comprar esta laptop:\n"
+                                         . "📌 *Producto:* {$product->name}\n"
+                                         . "🏷️ *SKU:* {$product->sku}\n"
+                                         . "💰 *Precio:* {$product->formatted_price}\n"
+                                         . "📄 *Ficha PDF:* {$cPdfUrl}";
+                                $cWaUrl = "https://wa.me/{$cWaNumber}?text=" . urlencode($cWaText);
+                            @endphp
 
-                        <!-- Especificaciones Rápidas -->
-                        @if(!empty($product->technical_specs))
-                        <div class="flex flex-wrap gap-1.5 border-t border-slate-100 pt-2 text-[10px] text-slate-500">
-                            @if(!empty($product->technical_specs['procesador']))
-                                <span class="rounded bg-slate-50 px-2 py-0.5 font-mono">{{ Str::limit($product->technical_specs['procesador'], 16) }}</span>
-                            @endif
-                            @if(!empty($product->technical_specs['ram']))
-                                <span class="rounded bg-slate-50 px-2 py-0.5 font-mono">{{ $product->technical_specs['ram'] }}</span>
-                            @endif
-                            @if(!empty($product->technical_specs['almacenamiento']))
-                                <span class="rounded bg-slate-50 px-2 py-0.5 font-mono">{{ $product->technical_specs['almacenamiento'] }}</span>
-                            @endif
+                            <div class="grid grid-cols-2 gap-2">
+                                <a
+                                    href="{{ $cWaUrl }}"
+                                    target="_blank"
+                                    onclick="window.open('{{ $cPdfUrl }}', '_blank')"
+                                    class="py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors shadow-sm"
+                                >
+                                    <span>WhatsApp</span>
+                                </a>
+
+                                <form action="{{ route('carrito.agregar') }}" method="POST">
+                                    @csrf
+                                    <input type="hidden" name="product_id" value="{{ $product->id }}">
+                                    <button type="submit" class="w-full py-2.5 px-3 rounded-xl bg-slate-900 hover:bg-violet-600 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors shadow-sm">
+                                        <span>+ Carrito</span>
+                                    </button>
+                                </form>
+                            </div>
                         </div>
-                        @endif
                     </div>
-
-                    <!-- Precio y Acciones -->
-                    <div class="mt-3 space-y-2 border-t border-slate-100 pt-3">
-                        <div>
-                            <span class="block text-[10px] font-semibold text-slate-400">Precio contado</span>
-                            <span class="text-xl font-black text-emerald-600">{{ $product->formatted_price }}</span>
-                        </div>
-
-                        @php
-                            $cardWaNumber = \App\Models\Setting::getWhatsappNumber();
-                            $cardPdfUrl = route('catalogo.ficha-tecnica', $product->slug);
-                            $cardWaText = "¡Hola! 💻 Deseo comprar esta laptop:\n"
-                                        . "📌 *Producto:* {$product->name}\n"
-                                        . "🏷️ *SKU:* {$product->sku}\n"
-                                        . "💰 *Precio:* {$product->formatted_price}\n"
-                                        . "📄 *Ficha Técnica PDF:* {$cardPdfUrl}";
-                            $cardWaUrl = "https://wa.me/{$cardWaNumber}?text=" . urlencode($cardWaText);
-                        @endphp
-                        <a href="{{ $cardWaUrl }}" target="_blank" onclick="window.open('{{ $cardPdfUrl }}', '_blank')" class="block rounded-lg bg-emerald-500 px-3 py-2.5 text-center text-xs font-black text-slate-950 transition hover:bg-emerald-400">◉ &nbsp;Comprar por WhatsApp</a>
-                        <form action="{{ route('carrito.agregar') }}" method="POST">
-                            @csrf
-                            <input type="hidden" name="product_id" value="{{ $product->id }}">
-                            <button type="submit" class="block w-full rounded-lg border border-slate-300 px-3 py-2 text-center text-xs font-bold text-slate-700 transition hover:border-emerald-500 hover:bg-emerald-50">Agregar al carrito</button>
-                        </form>
-                        <a href="{{ route('catalogo.detalle', $product->slug) }}" class="block rounded-lg border border-emerald-500 px-3 py-2 text-center text-xs font-bold text-emerald-700 transition hover:bg-emerald-50">▧ &nbsp;Ver ficha técnica</a>
-                        <a href="{{ route('catalogo.ficha-tecnica', $product->slug) }}" class="block text-center text-[11px] font-bold text-emerald-700 hover:underline">↓ Descargar PDF</a>
-                    </div>
-                </div>
                 @empty
-                <div class="col-span-3 glass-card rounded-3xl p-12 text-center text-slate-400 space-y-4">
-                    <svg class="w-12 h-12 mx-auto text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
-                    <h3 class="text-base font-bold text-white">No se encontraron laptops con los filtros aplicados</h3>
-                    <p class="text-xs text-slate-400 max-w-md mx-auto">
-                        Intenta modificando los términos de búsqueda o eliminando los filtros de categoría o precio.
-                    </p>
-                    <a href="{{ route('catalogo') }}" class="inline-block px-5 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition-all">
-                        Ver Todo el Catálogo
-                    </a>
-                </div>
+                    <div class="col-span-full bg-white rounded-3xl p-12 text-center border border-slate-200/80 space-y-4">
+                        <div class="w-16 h-16 rounded-full bg-slate-100 text-slate-400 mx-auto flex items-center justify-center">
+                            <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-black text-slate-900">No encontramos productos para tu búsqueda</h3>
+                        <p class="text-xs text-slate-500 max-w-sm mx-auto">
+                            Prueba ajustando los filtros o utilizando términos más generales en el buscador.
+                        </p>
+                        <a href="{{ route('catalogo') }}" class="inline-block px-5 py-2.5 rounded-xl bg-violet-600 text-white text-xs font-bold hover:bg-violet-700 transition-colors">
+                            Ver todo el catálogo
+                        </a>
+                    </div>
                 @endforelse
             </div>
 
             <!-- Paginación -->
             @if($products->hasPages())
-            <div class="pt-6">
-                {{ $products->links() }}
-            </div>
+                <div class="pt-6">
+                    {{ $products->links() }}
+                </div>
             @endif
 
-        </div>
+        </main>
 
     </div>
 

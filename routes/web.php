@@ -35,9 +35,12 @@ Route::post('/carrito/vaciar', [CartController::class, 'clear'])->name('carrito.
 Route::post('/pedido/checkout', [CartController::class, 'checkout'])->name('pedido.checkout');
 Route::get('/pedido/confirmacion/{orderNumber}', [CartController::class, 'confirmation'])->name('pedido.confirmacion');
 
-// ─── Webhook Oficial WhatsApp Business Cloud API (Meta) ───────────────────────
+// ─── Webhooks WhatsApp (Meta Cloud API & OpenWA REST) ──────────────────────
 Route::get('/webhook/whatsapp', [WhatsAppWebhookController::class, 'verifyWebhook'])->name('webhook.whatsapp.verify');
 Route::post('/webhook/whatsapp', [WhatsAppWebhookController::class, 'handleIncoming'])->name('webhook.whatsapp.handle');
+
+Route::post('/webhook/openwa', [\App\Http\Controllers\OpenWaWebhookController::class, 'handleIncoming'])->name('webhook.openwa.handle');
+Route::post('/api/webhook/openwa', [\App\Http\Controllers\OpenWaWebhookController::class, 'handleIncoming'])->name('api.webhook.openwa.handle');
 
 // ─── Autenticación Administrativa ──────────────────────────────────────────
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');

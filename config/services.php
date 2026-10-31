@@ -46,6 +46,14 @@ return [
         'base_url' => env('WHATSAPP_BASE_URL', 'https://graph.facebook.com'),
     ],
 
+    'openwa' => [
+        'base_url' => env('OPENWA_BASE_URL', 'http://localhost:2785'),
+        'api_key' => env('OPENWA_API_KEY'),
+        'session_id' => env('OPENWA_SESSION_ID', 'default'),
+        'webhook_secret' => env('OPENWA_WEBHOOK_SECRET'),
+        'timeout' => (int) env('OPENWA_TIMEOUT', 15),
+    ],
+
     'gemini' => [
         'api_key' => env('GEMINI_API_KEY'),
         'model' => env('GEMINI_MODEL', 'gemini-1.5-flash'),

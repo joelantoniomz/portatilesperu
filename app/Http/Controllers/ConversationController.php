@@ -9,6 +9,8 @@ use App\Models\Customer;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
+use App\Models\WhatsappSession;
+use App\Services\OpenWaService;
 use App\Services\WhatsAppCloudApiService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -18,7 +20,8 @@ use Illuminate\View\View;
 class ConversationController extends Controller
 {
     public function __construct(
-        protected WhatsAppCloudApiService $apiService
+        protected WhatsAppCloudApiService $apiService,
+        protected OpenWaService $openWaService
     ) {}
 
     /**
@@ -61,6 +64,7 @@ class ConversationController extends Controller
 
         $advisors = User::where('status', 'active')->orderBy('name')->get(['id', 'name']);
         $whatsappStatus = $this->apiService->getConfigurationStatus();
+        $openwaStatus = $this->openWaService->getSessionStatus();
 
         // Si hay una conversación solicitada o seleccionamos la primera disponible
         $activeConversation = null;
@@ -95,6 +99,7 @@ class ConversationController extends Controller
             'stats',
             'advisors',
             'whatsappStatus',
+            'openwaStatus',
             'products',
             'productsData'
         ));
@@ -125,6 +130,7 @@ class ConversationController extends Controller
 
         $advisors = User::where('status', 'active')->orderBy('name')->get(['id', 'name']);
         $whatsappStatus = $this->apiService->getConfigurationStatus();
+        $openwaStatus = $this->openWaService->getSessionStatus();
 
         $products = Product::published()
             ->with(['brand:id,name', 'category:id,name'])
@@ -231,6 +237,7 @@ class ConversationController extends Controller
                 'time_only' => $msg->sent_at?->format('H:i'),
             ]),
             'whatsapp_status' => $this->apiService->getConfigurationStatus(),
+            'openwa_status' => $this->openWaService->getSessionStatus(),
         ]);
     }
 
@@ -268,11 +275,20 @@ class ConversationController extends Controller
             ->limit(20)
             ->get(['id', 'status', 'error_message']);
 
+        // Incluir estado de sesión OpenWA para monitor reactivo
+        $session = WhatsappSession::where('session_id', $this->openWaService->getSessionId())->first();
+
         return response()->json([
             'new_messages' => $newMessages,
             'statuses' => $statuses,
             'unread_count' => $conversation->fresh()->unread_count,
             'status' => $conversation->status,
+            'session_status' => $session ? [
+                'connected' => (bool) $session->is_connected,
+                'status' => $session->status,
+                'battery' => $session->battery_level,
+                'phone' => $session->phone_number,
+            ] : null,
             'is_within_24h' => $conversation->isWithin24HourWindow(),
         ]);
     }
@@ -325,19 +341,73 @@ class ConversationController extends Controller
             ]);
         }
 
-        // 2. Envío real a WhatsApp Cloud API
+        // 2. Envío real a WhatsApp (Soporte prioritario OpenWA con fallback a Meta Cloud API)
         $content = (string) $request->input('content', '');
         $phone = $conversation->cleanPhone();
 
-        if (! $this->apiService->isConfigured()) {
+        $openWaConfigured = $this->openWaService->isConfigured();
+        $metaConfigured = $this->apiService->isConfigured();
+
+        if (! $openWaConfigured && ! $metaConfigured) {
             return response()->json([
                 'success' => false,
-                'error' => 'WhatsApp Cloud API no está configurada. Puedes guardar notas internas o configurar las credenciales de Meta en el archivo .env.',
+                'error' => 'Ningún servicio de WhatsApp está configurado en .env (OpenWA o Meta Cloud API). Configure OPENWA_BASE_URL y OPENWA_API_KEY para habilitar envíos reales directos.',
                 'error_code' => 'NOT_CONFIGURED',
-                'configuration_status' => $this->apiService->getConfigurationStatus(),
+                'configuration_status' => [
+                    'openwa' => $this->openWaService->getSessionStatus(),
+                    'meta' => $this->apiService->getConfigurationStatus(),
+                ],
             ], 422);
         }
 
+        // Si OpenWA está configurado, despachar mediante OpenWA
+        if ($openWaConfigured) {
+            $apiResult = $this->openWaService->sendText($phone, $content);
+            $message = ConversationMessage::create([
+                'conversation_id' => $conversation->id,
+                'user_id' => auth()->id(),
+                'direction' => 'outbound',
+                'sender_type' => 'advisor',
+                'type' => 'text',
+                'content' => $content,
+                'openwa_message_id' => $apiResult['message_id'] ?? null,
+                'status' => ($apiResult['success'] ?? false) ? 'sent' : 'failed',
+                'error_message' => $apiResult['error'] ?? null,
+                'sent_at' => now(),
+                'raw_payload' => $apiResult['data'] ?? null,
+            ]);
+
+            $conversation->update([
+                'last_activity_at' => now(),
+                'last_message_preview' => mb_substr($content, 0, 140),
+                'channel' => 'whatsapp_openwa',
+                'status' => $conversation->status === 'open' ? 'in_progress' : $conversation->status,
+            ]);
+
+            AuditLog::log('conversation.openwa_sent', Conversation::class, $conversation->id, null, [
+                'status' => $message->status,
+                'openwa_message_id' => $message->openwa_message_id,
+            ]);
+
+            return response()->json([
+                'success' => $apiResult['success'] ?? false,
+                'message' => [
+                    'id' => $message->id,
+                    'direction' => 'outbound',
+                    'sender_type' => 'advisor',
+                    'type' => 'text',
+                    'content' => $message->content,
+                    'status' => $message->status,
+                    'error_message' => $message->error_message,
+                    'user_name' => auth()->user()->name,
+                    'sent_at' => $message->sent_at->format('d/m/Y H:i'),
+                    'time_only' => $message->sent_at->format('H:i'),
+                ],
+                'warning' => ! ($apiResult['success'] ?? false) ? ($apiResult['error'] ?? 'Fallo de entrega en OpenWA') : null,
+            ]);
+        }
+
+        // Fallback a Meta Cloud API si solo Meta está configurado
         $apiResult = $this->apiService->sendTextMessage($phone, $content);
 
         $message = ConversationMessage::create([

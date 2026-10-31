@@ -17,6 +17,7 @@ class Conversation extends Model
         'order_id',
         'user_id',
         'channel',
+        'session_id',
         'customer_phone',
         'customer_name',
         'order_reference',

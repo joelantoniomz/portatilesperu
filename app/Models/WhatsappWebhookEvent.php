@@ -10,8 +10,10 @@ class WhatsappWebhookEvent extends Model
 
     protected $fillable = [
         'event_id',
+        'idempotency_key',
         'message_id',
         'event_type',
+        'source',
         'payload',
         'processed_at',
         'created_at',

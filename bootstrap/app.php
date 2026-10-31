@@ -15,6 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->trustProxies(at: '*');
+        $middleware->append(\App\Http\Middleware\SecurityHeadersMiddleware::class);
 
         $middleware->alias([
             'role' => CheckRole::class,
@@ -22,6 +23,8 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
         $middleware->validateCsrfTokens(except: [
             'webhook/whatsapp',
+            'webhook/openwa',
+            'api/webhook/openwa',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

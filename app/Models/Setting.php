@@ -10,7 +10,11 @@ class Setting extends Model
 
     public static function getValue(string $key, ?string $default = null): ?string
     {
-        return static::query()->where('key', $key)->value('value') ?? $default;
+        try {
+            return static::query()->where('key', $key)->value('value') ?? $default;
+        } catch (\Throwable $e) {
+            return $default;
+        }
     }
 
     /**
