@@ -150,7 +150,6 @@ class GeminiService
         }
 
         return $this->fallbackLocalExtraction($input, $lastError);
-        }
     }
 
     /**
